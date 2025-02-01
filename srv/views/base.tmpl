@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang={%& vars.lang %}> 
+  <head>
+  {% function block.head() %}
+    <title>{%& vars.title %}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% local CSS_LOC = vars.siteurl .."/css" %}
+    <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/structure.css" />
+    <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/style.css" />
+  {% end %}
+  {% block.head() %}
+  </head>
+  <body>
+    <div id="header" class="stack center">
+      <h1><a href="{% if vars.siteurl~= '' then %}{%& vars.siteurl %}{% else %}/{% end %}">{%& vars.title %}</a></h1>
+      {% function block.navbar() %}
+      <nav>
+        {% for text, link in pairs(vars.links) do %}
+          <a {% if text == current_page then %}class="current"{% end %}href="{%& link %}">{%& text %}</a>
+        {% end %}
+      </nav>
+      {% end %}
+      {% block.navbar("") %}
+    </div>
+    <content>
+      {% function block.content() %}{% end %}
+      {% block.content() %}
+    </content>
+    <footer>
+      {% function block.footer() %}
+        <footer>Copyright Dr Mark S. Brown 2025<footer>
+      {% end %}
+      {% block.footer() %}
+    </footer>
+  </body>
+</html>

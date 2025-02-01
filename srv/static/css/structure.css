@@ -1,0 +1,115 @@
+:root {
+  --ratio: 1.4;
+  --s-8: calc(var(--s-7) / var(--ratio));
+  --s-7: calc(var(--s-6) / var(--ratio));
+  --s-6: calc(var(--s-5) / var(--ratio));
+  --s-5: calc(var(--s-4) / var(--ratio));
+  --s-4: calc(var(--s-3) / var(--ratio));
+  --s-3: calc(var(--s-2) / var(--ratio));
+  --s-2: calc(var(--s-1) / var(--ratio));
+  --s-1: calc(var(--s0) / var(--ratio));
+  --s0: 1rem;
+  --s1: calc(var(--s0) * var(--ratio));
+  --s2: calc(var(--s1) * var(--ratio));
+  --s3: calc(var(--s2) * var(--ratio));
+  --s4: calc(var(--s3) * var(--ratio));
+  --s5: calc(var(--s4) * var(--ratio));
+  --max-width: 80ch;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+p{
+  max-width: var(--max-width);
+}
+
+
+.box {
+  padding: var(--s1);
+}
+
+.stack {
+  --space: var(--s1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.stack > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.stack > * + * {
+  margin-top: var(--space);
+}
+
+.cluster {
+  --space: var(--s0);
+  /* ↓ Suppress horizontal scrolling caused by
+  the negative margin in some circumstances */
+  overflow: hidden;
+}
+
+.cluster > * {
+  display: flex;
+  flex-wrap: wrap;
+  /* ↓ multiply by -1 to negate the halved value */
+  margin: calc(var(--space) / 2 * -1);
+}
+
+.cluster > * > * {
+  /* ↓ half the value, because of the 'doubling up' */
+  margin: calc(var(--space) / 2);
+}
+
+.center {
+  box-sizing: content-box;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--s-1);
+  padding-right: var(--s-1);
+}
+
+.imposter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: calc(100% - 2rem);
+  max-height: calc(100% - 2rem);
+}
+
+.switcher {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.switcher > * {
+  flex-grow: 1;
+}
+
+.switcher > :nth-last-child(n+ 4),
+.switcher > :nth-last-child(n+ 4) ~ * {
+  flex-basis: 100%;
+}
+
+/* Custom */
+
+
+.halfwidth {
+  max-width: calc(var(--max-width) / 2);
+}
+
+.not-active {
+  pointer-events: none;
+  cursor: default;
+  background-color: var(--col7);
+  color: var(--col7);
+}
+
+.doctest-block {
+  overflow-x: scroll;
+}
