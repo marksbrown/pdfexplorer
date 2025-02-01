@@ -1,3 +1,33 @@
+{% function block.new_page(image_base_64) %}
+<img src="data:image/png;base64, {%& image_base_64 %}">
+{% end %}
+
+{% function block.generate_link(name, value) %}
+{% if name == "tag" then %}
+<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value %}</a>
+{% elseif name == "id" then %}
+<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value %}</a>
+{% else %}
+{%& value %}
+{% end %}
+
+{% end %}
+
+{% function block.render_table(data, header, highlight) %}
+  <table>
+  {% for i = 1, #header do %}
+  <th>{%& header[i] %}</th>
+  {% end %}
+  {% for k,v in pairs(data) do %}
+    <tr>
+    {% for i,j in pairs(v) do %}
+      <td {% if j == highlight then %}class="active"{% end %}>{%& block.generate_link(i,j) %}</td>
+    {% end %}
+    </tr>
+  {% end %}
+  </table>
+{% end %}
+
 <!doctype html>
 <html lang={%& vars.lang %}> 
   <head>

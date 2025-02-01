@@ -22,6 +22,26 @@ fm.setTemplateVar("get_tag_count", function(tag)
   end
 end)
 
+fm.setTemplateVar("list_matching_pdfs", function(pdf)
+  local cmd = [[
+  [[
+  SELECT distinct id
+  from pages
+  where id
+  like (?);
+  ]]
+return db:fetchAll(cmd, pdf)
+end)
+
+fm.setTemplateVar("load_images_by_pdf", function(pdf)
+  local cmd = [[
+  select pages.id, page, png from pages
+  where pages.id = (?) 
+  order by pages.page;
+  ]]
+return db:fetchAll(cmd, pdf)
+end)
+
 fm.setTemplateVar("load_images_by_tag", function(tag)
   local cmd = [[
   select pages.id, pages.page, png from pages
@@ -49,6 +69,15 @@ fm.setTemplateVar("pdfs_by_tag", function(tag)
 end)
 
 
+fm.setTemplateVar("get_all_pdfs", function()
+  local cmd = [[
+  SELECT id, metadata
+  FROM pdfs
+  ORDER BY id
+  DESC;]]
+  return db:fetchAll(cmd)
+end)
+
 fm.setTemplateVar("get_all_tags", function()
   local cmd = [[
   SELECT tag, COUNT(*) 
@@ -60,15 +89,22 @@ fm.setTemplateVar("get_all_tags", function()
 end)
 
 fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
-  return fm.serveContent("page", {current_page = "tags", tag = ""})
+  return fm.serveContent("list_tags")
 end)
 
 fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
-  return fm.serveContent("page", {current_page = "tags", tag = r.params.tag})
+  return fm.serveContent("tags", {tag = r.params.tag})
+end)
+
+fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
+  return fm.serveContent("list_pdfs")
+end)
+
+fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
+  return fm.serveContent("pdfs", {pdf = r.params.path .. "/" .. r.params.pdf})
 end)
 
 fm.setRoute("/", fm.serveContent("index", {current_page = "index", name = "Mark"}))
-fm.setRoute({"/p/:pdf", "/pdfs/:pdf"}, function(r) return "PDF: "..(r.params.pdf) end)
 fm.setRoute("/static/*", fm.serveAsset) 
 fm.setRoute("/css/*", "/static/css/*")
 
