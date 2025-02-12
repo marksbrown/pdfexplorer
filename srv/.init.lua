@@ -1,16 +1,21 @@
 -- DB Explorer
-local fm = require "fullmoon"
+local fm = require "api"
 
 local db = fm.makeStorage("compsci.db")
-fm.setTemplate({"/views/", tmpl = "fmt"})
 
+--Load pdf pages
+local offset = 0  -- TODO how is this altered by the user?
+
+--Config
+local max_pages = 5
 local links = {home = "/",
                tags = '/tags/',
-               pdfs = '/pdfs/'}
+               pdfs = '/pdfs/',
+               statistics = '/stats/'}
 
+fm.setTemplateVar("title", "PDF Explorer")
 fm.setTemplateVar("links", links)
 fm.setTemplateVar("lang", "en_gb")
-fm.setTemplateVar("title", "PDF Explorer")
 fm.setTemplateVar("siteurl", "")
 
 fm.setTemplateVar("get_tag_count", function(tag)
@@ -33,27 +38,29 @@ fm.setTemplateVar("list_matching_pdfs", function(pdf)
 return db:fetchAll(cmd, pdf)
 end)
 
+
 fm.setTemplateVar("load_images_by_pdf", function(pdf)
   local cmd = [[
-  select pages.id, page, png from pages
+  select * from
+  (select pages.id, page, png from pages
   where pages.id = (?) 
-  order by pages.page;
+  order by pages.page)
+  limit (?), (?);
   ]]
-return db:fetchAll(cmd, pdf)
+return db:fetchAll(cmd, pdf, offset, offset + max_pages)
 end)
 
 fm.setTemplateVar("load_images_by_tag", function(tag)
   local cmd = [[
-  select pages.id, pages.page, png from pages
+  SELECT * from (select pages.id, pages.page, png from pages
   join pagetags
   on pages.id == pagetags.id
   and pages.page == pagetags.page
   where pagetags.tag = (?)
-  order by pages.id
-  desc
-  limit 10;
+  order by pages.id desc)
+  limit (?), (?);
   ]]
-  return db:fetchAll(cmd, tag)
+  return db:fetchAll(cmd, tag, offset, offset + max_pages)
 end)
 
 fm.setTemplateVar("pdfs_by_tag", function(tag)
@@ -68,6 +75,27 @@ fm.setTemplateVar("pdfs_by_tag", function(tag)
   return db:fetchAll(cmd, tag)
 end)
 
+fm.setTemplateVar("tags_by_pdf", function(pdf)
+  local cmd = [[
+  SELECT distinct tag
+  from pagetags
+  where id = (?) 
+  order by
+  tag asc;
+  ]]
+  return db:fetchAll(cmd, pdf)
+end)
+
+fm.setTemplateVar("tags_by_pdf_and_page", function(pdf, page)
+  local cmd = [[
+  SELECT distinct tag
+  from pagetags
+  where id = (?) and page = (?) 
+  order by
+  tag asc;
+  ]]
+  return db:fetchAll(cmd, pdf, page)
+end)
 
 fm.setTemplateVar("get_all_pdfs", function()
   local cmd = [[
@@ -87,26 +115,5 @@ fm.setTemplateVar("get_all_tags", function()
   DESC;]]
   return db:fetchAll(cmd)
 end)
-
-fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
-  return fm.serveContent("list_tags")
-end)
-
-fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
-  return fm.serveContent("tags", {tag = r.params.tag})
-end)
-
-fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
-  return fm.serveContent("list_pdfs")
-end)
-
-fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
-  return fm.serveContent("pdfs", {pdf = r.params.path .. "/" .. r.params.pdf})
-end)
-
-fm.setRoute("/", fm.serveContent("index", {current_page = "index", name = "Mark"}))
-fm.setRoute("/static/*", fm.serveAsset) 
-fm.setRoute("/css/*", "/static/css/*")
-
 
 fm.run()
