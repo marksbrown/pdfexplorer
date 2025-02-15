@@ -3,11 +3,7 @@ local fm = require "api"
 
 local db = fm.makeStorage("compsci.db")
 
---Load pdf pages
-local offset = 0  -- TODO how is this altered by the user?
-
 --Config
-local max_pages = 5
 local links = {home = "/",
                tags = '/tags/',
                pdfs = '/pdfs/',
@@ -39,7 +35,7 @@ return db:fetchAll(cmd, pdf)
 end)
 
 
-fm.setTemplateVar("load_images_by_pdf", function(pdf)
+fm.setTemplateVar("load_images_by_pdf", function(pdf, offset, max_pages)
   local cmd = [[
   select * from
   (select pages.id, page, png from pages
@@ -50,7 +46,7 @@ fm.setTemplateVar("load_images_by_pdf", function(pdf)
 return db:fetchAll(cmd, pdf, offset, offset + max_pages)
 end)
 
-fm.setTemplateVar("load_images_by_tag", function(tag)
+fm.setTemplateVar("load_images_by_tag", function(tag, offset, max_pages)
   local cmd = [[
   SELECT * from (select pages.id, pages.page, png from pages
   join pagetags
@@ -99,21 +95,33 @@ end)
 
 fm.setTemplateVar("get_all_pdfs", function()
   local cmd = [[
-  SELECT id, metadata
-  FROM pdfs
+  SELECT *
+  FROM exam
   ORDER BY id
   DESC;]]
   return db:fetchAll(cmd)
 end)
 
-fm.setTemplateVar("get_all_tags", function()
-  local cmd = [[
-  SELECT tag, COUNT(*) 
-  FROM pagetags 
+fm.setTemplateVar("get_all_tags", function(pdf)
+  if pdf ~= nil then
+    local cmd = [[
+  SELECT tag, COUNT(*) as count
+  FROM 
+  pagetags 
+  where pagetags.id = (?)
   GROUP BY tag
-  ORDER BY COUNT(*)
-  DESC;]]
+  ORDER BY tag
+  ASC;]]
+  return db:fetchAll(cmd, pdf)
+else
+  local cmd = [[
+  SELECT tag, COUNT(*) as count
+  FROM pagetags
+  GROUP BY tag
+  ORDER BY tag
+  ASC;]]
   return db:fetchAll(cmd)
+end
 end)
 
 fm.run()

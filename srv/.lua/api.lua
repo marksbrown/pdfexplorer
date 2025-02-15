@@ -7,7 +7,9 @@ fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
 end)
 
 fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
-  return fm.serveContent("tags", {tag = r.params.tag})
+  return fm.serveContent("tags", {tag = r.params.tag, 
+                                  offset = (r.params.offset or 0),
+                                  limit = (r.params.limit or -1)})
 end)
 
 fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
@@ -15,7 +17,9 @@ fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
 end)
 
 fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
-  return fm.serveContent("pdfs", {pdf = r.params.path .. "/" .. r.params.pdf})
+  return fm.serveContent("pdfs", {pdf = r.params.path .. "/" .. r.params.pdf,
+                                  offset = (r.params.offset or 0),
+                                  limit = (r.params.offset or -1)})
 end)
 
 -- Statistics

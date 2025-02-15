@@ -2,26 +2,55 @@
 <img src="data:image/png;base64, {%& image_base_64 %}">
 {% end %}
 
-{% function block.generate_link(name, value) %}
-{% if name == "tag" then %}
-<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value %}</a>
-{% elseif name == "id" then %}
-<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value %}</a>
+
+{% function block.generate_link(name, value, count) %}
+{% if count == nil then %}
+{% c = '' %}
 {% else %}
-{%& value %}
+{% c = ' (' .. count .. ')' %}
+{% end %}
+
+{% if name == "tag" then %}
+<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value .. c %}</a>
+{% elseif name == "id" then %}
+<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
+{% else %}
+{%& value .. c %}
 {% end %}
 
 {% end %}
 
-{% function block.render_table(data, header, highlight) %}
+{% function block.table_with_header(data, header) %}
+<table>
+<tr>
+{% for i, v in ipairs(header) do %}
+<th>{%& v %}</th>
+{% end %}
+</tr>
+{% for j = 1, #data do %}
+<tr>
+{% for i, v in ipairs(header) do %}
+<td>{%& block.generate_link(v, data[j][v]) %}</td>
+{% end %}
+</tr>
+{% end %}
+</table>
+{% end %}
+
+{% function block.render_table(data) %}
   <table>
-  {% for i = 1, #header do %}
-  <th>{%& header[i] %}</th>
-  {% end %}
-  {% for k,v in pairs(data) do %}
+  {% for i = 1, #data do %}
+    {% local row = data[i] %}
+    {% if i == 1 then %}
     <tr>
-    {% for i,j in pairs(v) do %}
-      <td {% if j == highlight then %}class="active"{% end %}>{%& block.generate_link(i,j) %}</td>
+    {% for k,v in pairs(row) do %}
+    <th>{%& k %}</th>
+    {% end %}
+    </tr>
+    {% end %}
+    <tr>
+    {% for k,v in pairs(row) do %}
+      <td>{%& block.generate_link(k,v) %}</td>
     {% end %}
     </tr>
   {% end %}
@@ -51,7 +80,7 @@
         {% end %}
       </nav>
       {% end %}
-      {% block.navbar("") %}
+      {% block.navbar() %}
     </div>
     <content>
       {% function block.content() %}{% end %}

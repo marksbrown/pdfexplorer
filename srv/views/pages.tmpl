@@ -1,0 +1,16 @@
+{% function block.content() %}
+<div class="pages">
+  <div class="pages-header">
+  <h1>Pages relating to '{%& pages_title %}'</h1>
+  {% function block.pages_header() %}{% end %}
+  {% block.pages_header() %}
+  </div>
+  <div class="pages-content">
+  {% for i = 1, #pages_data do %}
+    {% render('partial/page', {page_data = pages_data[i]}) %}
+  {% end %}
+  </div>
+</div>
+
+{% end %}
+{% render('base') %}

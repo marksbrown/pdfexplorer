@@ -1,0 +1,30 @@
+{% function block.new_page(image_base_64) %}
+<img class="page-img" src="data:image/png;base64, {%& image_base_64 %}">
+{% end %}
+
+<div class="page">
+  <div class="page-content">
+    {% function block.page_content() %}
+      {% block.new_page(page_data.png) %}
+    {% end %}
+    {% block.page_content() %}
+  </div>
+  <div class="page-meta">
+{% function block.page_meta() %}
+  Page {%& page_data.page %} from {% block.generate_link("id", page_data.id) %}
+  {% local page_tags = vars.tags_by_pdf_and_page(page_data.id, page_data.page) %}
+  {% if #page_tags > 0 then %}
+    <div class="cluster page-tags">
+    <div>
+    {% for j = 1, #page_tags do %}
+      <div class="tag">{%& block.generate_link("tag", page_tags[j].tag, vars.get_tag_count(page_tags[j].tag)) %}</div>
+    {% end %}
+    </div>
+    </div>
+  {% end %}
+{% end %}
+
+    {% block.page_meta() %}
+    <hr>
+  </div>
+</div>

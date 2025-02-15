@@ -1,6 +1,6 @@
 {% function block.content() %}
 <h1>All Tags</h1>
-{% block.render_table(vars.get_all_tags(), {"tag", "count"}, "") %}
+{% block.table_with_header(vars.get_all_tags(), {"tag", "count"}) %}
 
 {% end %}
 

@@ -61,14 +61,8 @@ footer {
   text-align: center;
 }
 
-img, video {
-  border-radius: var(--s1);
-}
-
 img {
-  max-width: 95%;
-  padding: var(--s-4);
-  margin: auto;
+  max-width: 100%;
 }
 
 .epigraph {
