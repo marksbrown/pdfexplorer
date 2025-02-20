@@ -15,7 +15,7 @@
 {% elseif name == "id" then %}
 <a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
 {% else %}
-{%& value .. c %}
+{%& value %}
 {% end %}
 
 {% end %}
@@ -23,14 +23,16 @@
 {% function block.table_with_header(data, header) %}
 <table>
 <tr>
-{% for i, v in ipairs(header) do %}
-<th>{%& v %}</th>
+<th>id</th>
+{% for i, key in ipairs(header) do %}
+<th>{%& key %}</th>
 {% end %}
 </tr>
-{% for j = 1, #data do %}
+{% for rowid, row in pairs(data) do %}
 <tr>
-{% for i, v in ipairs(header) do %}
-<td>{%& block.generate_link(v, data[j][v]) %}</td>
+<td>{%& block.generate_link("id", rowid) %}</td>
+{% for k, key in ipairs(header) do %}
+<td>{%& block.generate_link(key, row[key]) %}</td>
 {% end %}
 </tr>
 {% end %}
