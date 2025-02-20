@@ -76,6 +76,10 @@ img {
  --space: var(--s-4);
  }
 
+.icon {
+  height : 1ch;
+}
+
 .icon:hover {
   background-color: var(--col7);
   transition: background-color 1s;

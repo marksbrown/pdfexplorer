@@ -74,12 +74,13 @@
     {% local CSS_LOC = vars.siteurl .."/css" %}
     <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/structure.css" />
     <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/style.css" />
+    <link rel="icon" href="{%& vars.siteurl %}/img/logo.svg">
   {% end %}
   {% block.head() %}
   </head>
   <body>
     <div id="header" class="stack center">
-      <h1><a href="{% if vars.siteurl~= '' then %}{%& vars.siteurl %}{% else %}/{% end %}">{%& vars.title %}</a></h1>
+      <h1><a href="{% if vars.siteurl~= '' then %}{%& vars.siteurl %}{% else %}/{% end %}"><img class="icon" src="{%& vars.siteurl %}/img/logo.svg"/>{%& vars.title %}</a></h1>
       {% function block.navbar() %}
       <nav>
         {% for text, link in pairs(vars.links) do %}

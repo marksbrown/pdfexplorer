@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="160"
+   height="160"
+   viewBox="0 0 42.333332 42.333333"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="logo.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:export-filename="logo.png"
+   inkscape:export-xdpi="846.44"
+   inkscape:export-ydpi="846.44"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     shape-rendering="crispEdges"
+     inkscape:zoom="1.7461609"
+     inkscape:cx="101.36523"
+     inkscape:cy="85.902736"
+     inkscape:window-width="1558"
+     inkscape:window-height="834"
+     inkscape:window-x="42"
+     inkscape:window-y="29"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#0c3740;fill-opacity:1;stroke:#ffffff;stroke-width:0.0563068;stroke-linecap:square;stroke-linejoin:round;stroke-opacity:0"
+       id="rect919"
+       width="42.277027"
+       height="42.277027"
+       x="0.028153349"
+       y="0.028153349" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:2.18962;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:0.999995"
+       d="m 5.5863488,24.076289 c 1.4837815,0.713377 2.9676845,1.629331 4.4514662,1.619892 1.483901,-0.0094 2.967685,-1.079323 4.451587,-2.848788 1.483818,-1.769827 2.96766,-4.078408 4.451502,-5.304036 1.483842,-1.225265 2.967684,-1.204935 4.451514,0.04139 1.483843,1.246321 2.967687,3.562526 4.451526,5.321462 1.483842,1.758937 2.967685,2.798325 4.451527,2.789975 1.48383,-0.0084 2.967672,-0.934832 4.451514,-1.64349"
+       title="sin(x)/x"
+       id="path5971" />
+  </g>
+</svg>

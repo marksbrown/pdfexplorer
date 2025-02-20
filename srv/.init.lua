@@ -50,6 +50,15 @@ return db:fetchAll(cmd, pdf)
 end)
 
 
+fm.setTemplateVar("list_pdfs_matching_metadata", function(fullkey, value)
+ local cmd = [[
+SELECT id
+from pdfs
+where json(metadata) ->> (?) = (?);
+ ]]
+ return db:fetchAll(cmd, fullkey, value)
+end)
+
 fm.setTemplateVar("load_images_by_pdf", function(pdf, offset, max_pages)
   local cmd = [[
   select * from

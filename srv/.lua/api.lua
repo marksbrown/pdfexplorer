@@ -33,5 +33,6 @@ fm.setRoute({"/s/p/:pdf", "/s/pdfs/:pdf"}, function (r) return "Statistics relat
 fm.setRoute("/", fm.serveContent("index"))
 fm.setRoute("/static/*", fm.serveAsset) 
 fm.setRoute("/css/*", "/static/css/*")
+fm.setRoute("/img/*", "/static/img/*")
 
 return fm
