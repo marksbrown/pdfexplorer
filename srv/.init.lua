@@ -14,6 +14,21 @@ fm.setTemplateVar("links", links)
 fm.setTemplateVar("lang", "en_gb")
 fm.setTemplateVar("siteurl", "")
 
+fm.setTemplateVar("get_metadata_keys", function()
+  local cmd = [[
+    select distinct key
+    from pdfs, json_tree(pdfs.metadata)
+    where json_tree.type not in ('object')
+    order by key ASC;
+  ]]
+  local raw_data = db:fetchAll(cmd)
+  local parsed = {}
+  for i, row in ipairs(raw_data) do
+    parsed[i] = row.key
+  end
+  return parsed
+  end)
+
 fm.setTemplateVar("get_tag_count", function(tag)
   local d = db:fetchAll([[SELECT count from tags WHERE tag = (?);]], tag)
   if #d == 0 then
@@ -95,11 +110,16 @@ end)
 
 fm.setTemplateVar("get_all_pdfs", function()
   local cmd = [[
-  SELECT *
-  FROM exam
+  SELECT id, metadata
+  FROM pdfs
   ORDER BY id
   DESC;]]
-  return db:fetchAll(cmd)
+  local raw_data = db:fetchAll(cmd)
+  local parsed = {}
+  for k,v in pairs(raw_data) do
+    parsed[v.id] = DecodeJson(v.metadata)
+  end
+  return parsed
 end)
 
 fm.setTemplateVar("get_all_tags", function(pdf)

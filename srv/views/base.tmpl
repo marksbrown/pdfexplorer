@@ -20,17 +20,22 @@
 
 {% end %}
 
-{% function block.table_with_header(data, header) %}
+{% function block.table_with_header(data, header, show_id) %}
 <table>
 <tr>
+{% if show_id == 1 then %}
 <th>id</th>
+{% end %}
 {% for i, key in ipairs(header) do %}
 <th>{%& key %}</th>
 {% end %}
 </tr>
 {% for rowid, row in pairs(data) do %}
 <tr>
+{% if show_id == 1 then %}
 <td>{%& block.generate_link("id", rowid) %}</td>
+{% end %}
+
 {% for k, key in ipairs(header) do %}
 <td>{%& block.generate_link(key, row[key]) %}</td>
 {% end %}
