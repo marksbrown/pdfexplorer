@@ -1,6 +1,6 @@
 {% function block.content() %}
 <h1>All PDFs</h1>
-{% block.table_with_header(vars.get_all_pdfs(), vars.get_metadata_keys(), 1) %}
+{% block.table_with_header(vars.get_pdfs_filter(), vars.get_metadata_keys(), 1) %}
 {% end %}
 
 {% render('base', {current_page="pdfs"}) %}

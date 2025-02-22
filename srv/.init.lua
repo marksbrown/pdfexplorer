@@ -14,6 +14,35 @@ fm.setTemplateVar("links", links)
 fm.setTemplateVar("lang", "en_gb")
 fm.setTemplateVar("siteurl", "")
 
+
+local get_all_pdfs = function()
+  local cmd = [[
+  SELECT id, metadata
+  FROM pdfs
+  ORDER BY id
+  DESC;]]
+  local raw_data = db:fetchAll(cmd)
+  local parsed = {}
+  for k,v in pairs(raw_data) do
+    parsed[v.id] = DecodeJson(v.metadata)
+  end
+  return parsed
+end
+
+fm.setTemplateVar("get_pdfs_filter", function(key, ...)
+  if #arg == 0 then
+    return get_all_pdfs()
+  end
+  local cmd = [[
+    select pdfs.id, key, value
+    from pdfs, json_tree(pdfs.metadata)
+    where key not null
+    and key = (?)
+    and value in (?);
+    ]]
+    return fm:fetchAll(cmd, key, arg)
+end)
+
 fm.setTemplateVar("get_metadata_keys", function()
   local cmd = [[
     select distinct key
@@ -115,20 +144,6 @@ fm.setTemplateVar("tags_by_pdf_and_page", function(pdf, page)
   tag asc;
   ]]
   return db:fetchAll(cmd, pdf, page)
-end)
-
-fm.setTemplateVar("get_all_pdfs", function()
-  local cmd = [[
-  SELECT id, metadata
-  FROM pdfs
-  ORDER BY id
-  DESC;]]
-  local raw_data = db:fetchAll(cmd)
-  local parsed = {}
-  for k,v in pairs(raw_data) do
-    parsed[v.id] = DecodeJson(v.metadata)
-  end
-  return parsed
 end)
 
 fm.setTemplateVar("get_all_tags", function(pdf)
