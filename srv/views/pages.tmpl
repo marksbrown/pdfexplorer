@@ -1,14 +1,20 @@
 {% function block.content() %}
 <div class="pages">
   <div class="pages-header">
-  <h1>Pages relating to '{%& pages_title %}'</h1>
-  {% function block.pages_header() %}{% end %}
+  {% function block.pages_header() %}<h1>-{%& pages_title %}-</h1>{% end %}
   {% block.pages_header() %}
   </div>
+  <div class="pages-filter">
+  {% function block.pages_filter() %}{% end %}
+  {% block.pages_filter() %}
+  </div>
   <div class="pages-content">
+  {% function block.pages_content() %}
   {% for i = 1, #pages_data do %}
     {% render('partial/page', {page_data = pages_data[i]}) %}
   {% end %}
+  {% end %}
+  {% block.pages_content() %}
   </div>
 </div>
 

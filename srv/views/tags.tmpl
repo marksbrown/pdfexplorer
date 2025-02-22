@@ -1,4 +1,5 @@
 {% function block.pages_header() %}
+  {% block.pages.pages_header() %}
   {% local tag_count = vars.get_tag_count(tag) %}
   <p>
   {% if tag_count > 1 then %}
