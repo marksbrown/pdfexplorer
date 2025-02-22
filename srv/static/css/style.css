@@ -77,7 +77,8 @@ img {
  }
 
 .icon {
-  height : 1ch;
+  height : var(--s1);
+  width: var(--s1);
 }
 
 .icon:hover {
