@@ -1,5 +1,12 @@
 local fm = require "fullmoon"
 
+local load_settings = function()
+  fd = assert(unix.open('/zip/defaults.json', unix.O_RDONLY))
+  local params = assert(DecodeJson(unix.read(fd)))
+  unix.close(fd)
+  return params
+end
+
 fm.setTemplate({"/views/", tmpl = "fmt"})
 
 fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
@@ -7,9 +14,10 @@ fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
 end)
 
 fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
+  local s = load_settings()
   return fm.serveContent("tags", {tag = r.params.tag, 
-                                  offset = (r.params.offset or 0),
-                                  limit = (r.params.limit or -1)})
+                                  offset = (r.params.offset or s.offset),
+                                  limit = (r.params.limit or s.limit)})
 end)
 
 fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
@@ -17,17 +25,20 @@ fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
 end)
 
 fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
+  local s = load_settings()
   return fm.serveContent("pdfs", {pdf = r.params.path .. "/" .. r.params.pdf,
-                                  offset = (r.params.offset or 0),
-                                  limit = (r.params.offset or -1)})
+                                  offset = (r.params.offset or s.offset),
+                                  limit = (r.params.offset or s.limit)})
 end)
 
--- Statistics
-fm.setRoute({"/s(/)", "/stats(/)"}, fm.serveContent("statistics")) 
-fm.setRoute({"/s/t(/)", "/s/tags(/)"}, function (r) return "Statistics relating to all tags" end)
-fm.setRoute({"/s/p(/)", "/s/pdfs(/)"}, function (r) return "Statistics relating to all pdfs" end)
-fm.setRoute({"/s/t/:tag", "/s/tags/:tag"}, function (r) return "Statistics relating to " ..r.params.tag end)
-fm.setRoute({"/s/p/:pdf", "/s/pdfs/:pdf"}, function (r) return "Statistics relating to " ..r.params.pdf end)
+
+fm.setRoute(fm.GET"/settings(/)", function(r)
+  return fm.serveContent("settings", {settings = load_settings()})
+end)
+
+fm.setRoute(fm.POST"/settings/:settings", function(r)
+  -- do something!
+end)
 
 -- General
 fm.setRoute("/", fm.serveContent("index"))

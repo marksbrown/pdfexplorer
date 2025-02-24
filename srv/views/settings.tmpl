@@ -1,0 +1,13 @@
+{% function block.content() %}
+<h2>Settings</h3>
+<dl>
+{% for k,v in pairs(settings) do %}
+<div>
+  <dt>{%& k %}</dt>
+  <dd>{%& v %}</dt>
+</div>
+{% end %}
+</dl>
+{% end %}
+
+{% render('base', {current_page="settings"}) %}
