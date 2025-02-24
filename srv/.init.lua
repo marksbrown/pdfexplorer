@@ -7,10 +7,13 @@ local db = fm.makeStorage("compsci.db")
 local links = {home = "/",
                tags = '/tags/',
                pdfs = '/pdfs/',
-               statistics = '/stats/'}
+               settings = '/settings/'}
+
+local rolecall = {'home', 'pdfs', 'tags', 'settings'}
 
 fm.setTemplateVar("title", "PDF Explorer")
 fm.setTemplateVar("links", links)
+fm.setTemplateVar("rollcall", rolecall)
 fm.setTemplateVar("lang", "en_gb")
 fm.setTemplateVar("siteurl", "")
 

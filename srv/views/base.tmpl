@@ -83,8 +83,9 @@
       <h1><a href="{% if vars.siteurl~= '' then %}{%& vars.siteurl %}{% else %}/{% end %}"><img class="icon" src="{%& vars.siteurl %}/img/logo.svg"/>{%& vars.title %}</a></h1>
       {% function block.navbar() %}
       <nav>
-        {% for text, link in pairs(vars.links) do %}
-          <a {% if text == current_page then %}class="current"{% end %}href="{%& link %}">{%& text %}</a>
+        {% for i, key in ipairs(vars.rollcall) do %}
+          {% local link = vars.links[key] %}
+          <a {% if key == current_page then %}class="current"{% end %}href="{%& link %}">{%& key %}</a>
         {% end %}
       </nav>
       {% end %}
