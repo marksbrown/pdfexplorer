@@ -1,8 +1,6 @@
-{% local data = vars.filter_pdfs(selected) %}
-
 {% function block.pages_header() %}
   {% block.pages.pages_header() %}
-  {% local c = vars.uti.len(data) %}
+  {% local c = vars.uti.len(table_data) %}
   {% if c > 1 then %}
     <p>There are {%& c %} matching PDFs</p>
   {% else if c == 1 then %}
@@ -14,11 +12,11 @@
 {% end %}
 
 {% function block.pages_content() %}
-  {% if vars.uti.len(data) > 0 then %}
-    <div>
-    {% block.table_with_header(data, vars.header, 1) %}
-    {% data = nil %}
+  {% if vars.uti.len(table_data) > 0 then %}
+    <div id="table-content">
+      {% render("partial/table", {table_data=table_data, table_header=vars.header, show_id=true}) %}
     </div>
+    {% data = nil %}
   {% end %}
 {% end %}
 

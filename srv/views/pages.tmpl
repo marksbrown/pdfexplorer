@@ -18,7 +18,7 @@
       <div class="cluster"><div>
     {% end %}
     <div>
-      <input type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
+      <input hx-include="closest form" hx-get="/table" hx-target="#table-content" type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
       {% if vars.uti.value_in_array(value, selected[key]) then %}checked{% end %}
       />
       <label for="{{%& key %}[]">{%& value %}</label>
@@ -41,10 +41,10 @@
   {% block.pages_header() %}
 </div>
 <div class="with-sidebar">
-  <div class="pages-filter halfwidth">
+  <div class="halfwidth">
   {% block.pages_filter() %}
   </div>
-  <div class="pages-content">
+  <div id="pages-content">
     {% function block.pages_content() %}
     {% for i = 1, #pages_data do %}
       {% render('partial/page', {page_data = pages_data[i]}) %}

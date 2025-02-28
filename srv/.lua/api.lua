@@ -1,7 +1,9 @@
 local fm = require "fullmoon"
 local uti = require "utils"
+local dbm = require "db"
 
 fm.setTemplate({"/views/", tmpl = "fmt"})
+
 
 fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
   return fm.serveContent("list_tags")
@@ -14,10 +16,9 @@ fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
                                   limit = (r.params.limit or s.limit)})
 end)
 
-fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
-  --TODO(?) replace this with db call listing *aggregate* union of all metadata keys
-  all_keys = {"date", "exam-board", "part", "level"}
-  selected = {}
+local function parse_metadata_filters(r)
+  local all_keys = dbm.get_metadata_keys()
+  local selected = {}
   
   for i, k in ipairs(all_keys) do
     local p = r.params[k]
@@ -28,12 +29,19 @@ fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
       end
     end
   end
+  return selected
+end
 
-  if uti.len(selected) == 0 then
-    selected = nil
-  end
+fm.setRoute("/table", function(r)
+  local selected = parse_metadata_filters(r)
+  local table_data = dbm.filter_pdfs(selected)
+  return fm.serveContent("partial/table", {table_data = table_data, table_header = dbm.get_metadata_keys()})
+end)
 
-  return fm.serveContent("list_pdfs", {selected = selected})
+fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
+  local selected = parse_metadata_filters(r)
+  local table_data = dbm.filter_pdfs(selected)
+  return fm.serveContent("list_pdfs", {table_data = table_data, selected = selected})
 end)
 
 fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)

@@ -1,0 +1,40 @@
+{% function block.generate_link(name, value, count) %}
+{% if count == nil then %}
+{% c = '' %}
+{% else %}
+{% c = ' (' .. count .. ')' %}
+{% end %}
+
+{% if name == "tag" then %}
+<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value .. c %}</a>
+{% elseif name == "id" then %}
+<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
+{% else %}
+{%& value %}
+{% end %}
+
+{% end %}
+
+{% function populate_table(data, header) %}
+<table>
+<tr>
+<th>id</th>
+{% for i, key in ipairs(header) do %}<th>{%& key %}</th>{% end %}
+</tr>
+  {% for rowid, row in pairs(data) do %}
+  <tr>
+  <td>{%& block.generate_link("id", rowid) %}</td>
+
+  {% for k, key in ipairs(header) do %}
+    <td>{%& block.generate_link(key, row[key]) %}</td>
+  {% end %}
+</tr>
+{% end %}
+</table>
+{% end %}
+
+{% populate_table(table_data, table_header) %}
+
+
+
+

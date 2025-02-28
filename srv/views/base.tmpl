@@ -20,7 +20,7 @@
 {% end %}
 
 {% function block.table_with_header(data, header, show_id) %}
-<table>
+<table id="pdfs-table">
 <tr>
 {% if show_id == 1 then %}
   <th>id</th>
@@ -52,6 +52,9 @@
     <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/structure.css" />
     <link rel="stylesheet" type="text/css" href="{%& CSS_LOC %}/style.css" />
     <link rel="icon" href="{%& vars.siteurl %}/img/logo.svg">
+
+    <script src="{%& vars.siteurl %}/js/htmx.js" async></script>
+
   {% end %}
   {% block.head() %}
   </head>
