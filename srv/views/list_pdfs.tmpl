@@ -1,5 +1,25 @@
-{% function block.pages_content() %}
-{% block.table_with_header(vars.get_pdfs_filter(), vars.get_metadata_keys(), 1) %}
+{% local data = vars.filter_pdfs(selected) %}
+
+{% function block.pages_header() %}
+  {% block.pages.pages_header() %}
+  {% local c = vars.uti.len(data) %}
+  {% if c > 1 then %}
+    <p>There are {%& c %} matching PDFs</p>
+  {% else if c == 1 then %}
+    <p>There is {%& c %} matching PDF</p>
+  {% else %}
+    <p>There are no matching pdfs</p>
+  {% end %}
+{% end %}
 {% end %}
 
-{% render('pages', {pages_title="All PDFs", current_page="pdfs"}) %}
+{% function block.pages_content() %}
+  {% if vars.uti.len(data) > 0 then %}
+    <div>
+    {% block.table_with_header(data, vars.header, 1) %}
+    {% data = nil %}
+    </div>
+  {% end %}
+{% end %}
+
+{% render('pages', {pages_title="PDFs", current_page="pdfs"}) %}

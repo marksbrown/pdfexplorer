@@ -2,7 +2,6 @@
 <img src="data:image/png;base64, {%& image_base_64 %}">
 {% end %}
 
-
 {% function block.generate_link(name, value, count) %}
 {% if count == nil then %}
 {% c = '' %}
@@ -24,44 +23,22 @@
 <table>
 <tr>
 {% if show_id == 1 then %}
-<th>id</th>
+  <th>id</th>
 {% end %}
-{% for i, key in ipairs(header) do %}
-<th>{%& key %}</th>
-{% end %}
+{% for i, key in ipairs(header) do %}<th>{%& key %}</th>{% end %}
 </tr>
-{% for rowid, row in pairs(data) do %}
-<tr>
-{% if show_id == 1 then %}
-<td>{%& block.generate_link("id", rowid) %}</td>
-{% end %}
+  {% for rowid, row in pairs(data) do %}
+  <tr>
+  {% if show_id == 1 then %}
+    <td>{%& block.generate_link("id", rowid) %}</td>
+  {% end %}
 
-{% for k, key in ipairs(header) do %}
-<td>{%& block.generate_link(key, row[key]) %}</td>
-{% end %}
+  {% for k, key in ipairs(header) do %}
+    <td>{%& block.generate_link(key, row[key]) %}</td>
+  {% end %}
 </tr>
 {% end %}
 </table>
-{% end %}
-
-{% function block.render_table(data) %}
-  <table>
-  {% for i = 1, #data do %}
-    {% local row = data[i] %}
-    {% if i == 1 then %}
-    <tr>
-    {% for k,v in pairs(row) do %}
-    <th>{%& k %}</th>
-    {% end %}
-    </tr>
-    {% end %}
-    <tr>
-    {% for k,v in pairs(row) do %}
-      <td>{%& block.generate_link(k,v) %}</td>
-    {% end %}
-    </tr>
-  {% end %}
-  </table>
 {% end %}
 
 <!doctype html>
@@ -97,7 +74,7 @@
     </content>
     <footer>
       {% function block.footer() %}
-        <footer>Copyright Dr Mark S. Brown 2025<footer>
+        Copyright Dr Mark S. Brown 2025
       {% end %}
       {% block.footer() %}
     </footer>

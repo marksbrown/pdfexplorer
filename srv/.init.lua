@@ -1,7 +1,11 @@
 -- DB Explorer
-local fm = require "api"
+local fm = require "fullmoon"
+local uti = require "utils" 
 
-local db = fm.makeStorage("compsci.db")
+require "api"
+
+
+local db = assert(fm.makeStorage("compsci.db"))
 
 --Config
 local links = {home = "/",
@@ -17,6 +21,7 @@ fm.setTemplateVar("rollcall", rolecall)
 fm.setTemplateVar("lang", "en_gb")
 fm.setTemplateVar("siteurl", "")
 
+fm.setTemplateVar("uti", uti)  -- make utilities available to templates
 
 local get_all_pdfs = function()
   local cmd = [[
@@ -32,34 +37,86 @@ local get_all_pdfs = function()
   return parsed
 end
 
-fm.setTemplateVar("get_pdfs_filter", function(key, ...)
-  if #arg == 0 then
-    return get_all_pdfs()
-  end
+fm.setTemplateVar("get_all_pdfs", get_all_pdfs)
+
+local get_matching_pdfs = function(key, value)
+  -- value can be str or tbl
+  -- thus need to alter cmd to fit unknown length of value
+  local in_clause = string.rep("?, ", #value):sub(1, -3) -- magic
   local cmd = [[
-    select pdfs.id, key, value
+    select pdfs.id, pdfs.metadata
     from pdfs, json_tree(pdfs.metadata)
     where key not null
     and key = (?)
-    and value in (?);
+    and value in (]]
+    ..
+    in_clause
+    ..[[)
+    order by pdfs.id
+    DESC;
     ]]
-    return fm:fetchAll(cmd, key, arg)
+    local raw_data = db:fetchAll(cmd, key, table.unpack(value))
+    local parsed = {}
+    for k,v in pairs(raw_data) do
+      parsed[v.id] = DecodeJson(v.metadata)
+    end
+    return parsed
+end
+
+fm.setTemplateVar("filter_pdfs", function(filter_by)
+  if uti.len(filter_by) == 0 then  -- defaults to showing all
+    return get_all_pdfs()
+  end
+  local results = nil
+  for mkey, mvalue in pairs(filter_by) do
+    local new_result = get_matching_pdfs(mkey, mvalue) 
+    if results == nil then
+      results = new_result
+    else
+      results = uti.union(results, new_result)
+      if uti.len(results) == 0 then  -- none matching found
+        return results
+      end
+    end
+  end
+  return results
 end)
 
-fm.setTemplateVar("get_metadata_keys", function()
+local get_metadata_keys = function()
   local cmd = [[
     select distinct key
     from pdfs, json_tree(pdfs.metadata)
     where json_tree.type not in ('object')
     order by key ASC;
   ]]
-  local raw_data = db:fetchAll(cmd)
+  return db:fetchAll(cmd)
+end
+
+local _get_header = function()
+  local d = get_metadata_keys()
+  local p = {}
+  for i,k in ipairs(d) do
+    p[#p + 1] = k.key
+  end
+  return p
+end
+
+fm.setTemplateVar("header", _get_header()) 
+
+fm.setTemplateVar("get_metadata_values", function(key)
+  local cmd = [[
+select distinct value
+from pdfs, json_tree(pdfs.metadata)
+where key not null
+and key = (?);
+  ]]
+  local d = db:fetchAll(cmd, key)
   local parsed = {}
-  for i, row in ipairs(raw_data) do
-    parsed[i] = row.key
+  for i, values in ipairs(d) do
+    parsed[#parsed + 1] = values.value
   end
   return parsed
-  end)
+end)
 
 fm.setTemplateVar("get_tag_count", function(tag)
   local d = db:fetchAll([[SELECT count from tags WHERE tag = (?);]], tag)
@@ -79,16 +136,6 @@ fm.setTemplateVar("list_matching_pdfs", function(pdf)
   like (?);
   ]]
 return db:fetchAll(cmd, pdf)
-end)
-
-
-fm.setTemplateVar("list_pdfs_matching_metadata", function(fullkey, value)
- local cmd = [[
-SELECT id
-from pdfs
-where json(metadata) ->> (?) = (?);
- ]]
- return db:fetchAll(cmd, fullkey, value)
 end)
 
 fm.setTemplateVar("load_images_by_pdf", function(pdf, offset, max_pages)

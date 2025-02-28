@@ -34,10 +34,7 @@ h3 {
 
 
 body {
-  display: flex;
-  flex-direction: column;
   background-color: var(--col8);
-  max-width: var(--max-width);
   margin: 0 auto;
   padding-top: var(--s-1);
   padding-left: var(--s0);
@@ -142,6 +139,7 @@ nav a + a {
 h1 a{
   text-decoration: none;
 }
+
 content {
   text-align: justify;
 }
@@ -192,8 +190,12 @@ figure + figure {
 }
 
 
+fieldset {
+  letter-spacing: var(--s-8);
+  border: 1px solid var(--col6);
+}
+
 table {
-  width : 95%;
   border-collapse: collapse;
   margin: auto;
   letter-spacing: var(--s-8);
@@ -203,7 +205,6 @@ table {
 th, td {
   padding: var(--s-3);
 }
-
 
 tr {
   border-bottom: 1px solid var(--col6);
@@ -223,4 +224,3 @@ address > * > *{
   font-style: normal;
   text-decoration: none;
 }
-

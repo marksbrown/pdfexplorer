@@ -4,7 +4,7 @@
 {% for k,v in pairs(settings) do %}
 <div>
   <dt>{%& k %}</dt>
-  <dd>{%& v %}</dt>
+  <dd>{%& vars.uti.dump(v) %}</dt>
 </div>
 {% end %}
 </dl>

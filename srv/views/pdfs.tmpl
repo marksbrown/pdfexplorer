@@ -1,5 +1,6 @@
 {% function block.pages_header() %}
   {% block.pages.pages_header() %}
+  <h3>{%& path %}</h3>
     {% local tags_found = vars.get_all_tags(pdf) %}
   <div id="tags">
     {% for i = 1, #tags_found do %}
@@ -8,6 +9,6 @@
   </div>
 {% end %}
 
-{% local data = vars.load_images_by_pdf(pdf, offset, limit) %}
+{% local data = vars.load_images_by_pdf(fullpath, offset, limit) %}
 
 {% render('pages', {pages_title = pdf, current_page="pdfs", pages_data = data}) %}

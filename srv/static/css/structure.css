@@ -96,10 +96,25 @@ p{
   flex-basis: 100%;
 }
 
+.with-sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.with-sidebar > :first-child {
+  flex-grow: 1;
+}
+
+.with-sidebar > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: 50%;
+}
+
 /* Custom */
 
-
-.halfwidth {
+.half-width, .halfwidth {
   max-width: calc(var(--max-width) / 2);
 }
 
