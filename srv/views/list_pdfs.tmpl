@@ -16,7 +16,8 @@
     <div id="table-content">
       {% render("partial/table", {table_data=table_data, table_header=vars.header, show_id=true}) %}
     </div>
-    {% data = nil %}
+  {% else %}
+    <p>No PDFs match selected filters</p>
   {% end %}
 {% end %}
 

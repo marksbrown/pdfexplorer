@@ -4,7 +4,6 @@ local dbm = require "db"
 
 fm.setTemplate({"/views/", tmpl = "fmt"})
 
-
 fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
   return fm.serveContent("list_tags")
 end)
@@ -22,8 +21,8 @@ local function parse_metadata_filters(r)
   
   for i, k in ipairs(all_keys) do
     local p = r.params[k]
+    selected[k] = {}
     if p ~= nil then
-      selected[k] = {}
       for j, value in ipairs(p) do
         selected[k][#selected[k]+ 1] = value
       end
@@ -36,6 +35,15 @@ fm.setRoute("/table", function(r)
   local selected = parse_metadata_filters(r)
   local table_data = dbm.filter_pdfs(selected)
   return fm.serveContent("partial/table", {table_data = table_data, table_header = dbm.get_metadata_keys()})
+end)
+
+fm.setRoute({"/p/none", "/pdfs/none"}, function(r)
+  return fm.serveContent("list_pdfs")
+end)
+
+fm.setRoute({"/p/all", "/pdfs/all"}, function(r)
+  local table_data = dbm.get_all_pdfs(selected)
+  return fm.serveContent("list_pdfs", {table_data = table_data})
 end)
 
 fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)

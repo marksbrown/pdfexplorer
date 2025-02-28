@@ -4,10 +4,6 @@
   {% all_values[key] = vars.get_metadata_values(key) %}
 {% end %}
 
-{% if selected == nil then %}
-  {% selected = all_values %}
-{% end %}
-
 <h4>Filter</h4>
 <form action="/pdfs" name="filter" method="get">
 {% for key, values in pairs(all_values) do %}
@@ -18,8 +14,12 @@
       <div class="cluster"><div>
     {% end %}
     <div>
-      <input hx-include="closest form" hx-get="/table" hx-target="#table-content" type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
-      {% if vars.uti.value_in_array(value, selected[key]) then %}checked{% end %}
+      <input hx-push-url="true" hx-include="closest form" hx-get="/table" hx-target="#table-content" type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
+      {% if selected == nil then %}
+        checked
+      {% else %}
+        {% if vars.uti.value_in_array(value, selected[key]) then %}checked{% end %}
+      {% end %}
       />
       <label for="{{%& key %}[]">{%& value %}</label>
     </div>

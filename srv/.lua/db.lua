@@ -186,9 +186,6 @@ end
 end
 
 dbm.filter_pdfs = function(filter_by)
-  if uti.len(filter_by) == 0 then  -- defaults to showing all
-    return dbm.get_all_pdfs()
-  end
   local results = nil
   for mkey, mvalue in pairs(filter_by) do
     local new_result = dbm.get_matching_pdfs(mkey, mvalue) 
