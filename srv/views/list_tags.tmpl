@@ -1,6 +1,12 @@
-{% function block.pages_content() %}
-{% block.table_with_header(vars.get_all_tags(), {"tag", "count"}, 0) %}
+{% function block.content() %}
+{% if vars.uti.len(table_data) > 0 then %}
+  <div id="table-content">
+    {% render("partial/table", {table_data=table_data, table_header=table_header, show_id=false}) %}
+  </div>
+{% else %}
+  <p>No tags match selected filters</p>
+{% end %}
 {% end %}
 
-{% render('pages', {pages_title="All tags", current_page="tags"}) %}
+{% render('layouts/base', {current_page="tags"}) %}
 

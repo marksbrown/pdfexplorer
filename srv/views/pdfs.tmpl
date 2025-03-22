@@ -11,4 +11,10 @@
 
 {% local data = vars.load_images_by_pdf(fullpath, offset, limit) %}
 
-{% render('pages', {pages_title = pdf, current_page="pdfs", pages_data = data}) %}
+{% function block.content_body() %}
+{% for i = 1, #data do %}
+  {% render('partial/page', {page_data = data[i]}) %}
+{% end %}
+{% end %}
+
+{% render('layouts/with_sidebar', {current_page="pdfs"}) %}

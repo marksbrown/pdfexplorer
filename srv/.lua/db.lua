@@ -53,6 +53,19 @@ dbm.get_matching_pdfs = function(key, value)
     return parsed
 end
 
+dbm.get_matching_tags = function(key, value)
+  local cmd = [[
+  select tags.tag, count
+  from tags
+  join pagetags
+  on pagetags.tag = tags.tag
+  where (?)
+  like (?)
+  group by tags.tag;
+  ]]
+  return dbm.db:fetchAll(cmd, key, value)
+end
+
 dbm.get_metadata_keys = function()
   local cmd = [[
     select distinct key

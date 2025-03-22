@@ -1,5 +1,5 @@
 {
-  "limit" : 2,
+  "limit" : -1,
   "offset" : 0,
   "database" : {"name" : "compsci.db", "loc" : "."}
 }

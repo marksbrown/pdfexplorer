@@ -4,17 +4,7 @@ local dbm = require "db"
 
 fm.setTemplate({"/views/", tmpl = "fmt"})
 
-fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
-  return fm.serveContent("list_tags")
-end)
-
-fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
-  local s = uti.load_settings()
-  return fm.serveContent("tags", {tag = r.params.tag, 
-                                  offset = (r.params.offset or s.offset),
-                                  limit = (r.params.limit or s.limit)})
-end)
-
+-- Local utility functions
 local function parse_metadata_filters(r)
   local all_keys = dbm.get_metadata_keys()
   local selected = {}
@@ -31,25 +21,47 @@ local function parse_metadata_filters(r)
   return selected
 end
 
-fm.setRoute("/table", function(r)
+-- Partial Routes for AJAX requests
+fm.setRoute("/table/pdfs", function(r)
   local selected = parse_metadata_filters(r)
-  local table_data = dbm.filter_pdfs(selected)
-  return fm.serveContent("partial/table", {table_data = table_data, table_header = dbm.get_metadata_keys()})
+  return fm.serveContent("partial/table", {table_data = dbm.filter_pdfs(selected),
+                                           table_header = dbm.get_metadata_keys(),
+                                           show_id = true})
 end)
 
-fm.setRoute({"/p/none", "/pdfs/none"}, function(r)
-  return fm.serveContent("list_pdfs")
+fm.setRoute("/table/pdfs/all", function(r)
+  return fm.serveContent("partial/table", {table_data = dbm.get_all_pdfs(),
+                                           table_header = dbm.get_metadata_keys(),
+                                           show_id = true})
+end)
+
+-- Full Routes
+fm.setRoute({"/t/all", "/tags/all"}, function(r)
+  local table_header = {"tag", "count"}
+  return fm.serveContent("list_tags", {table_data = dbm.get_all_tags(),
+                                       table_header = table_header,
+                                       show_id = false})
 end)
 
 fm.setRoute({"/p/all", "/pdfs/all"}, function(r)
-  local table_data = dbm.get_all_pdfs(selected)
+  local table_data = dbm.get_all_pdfs()
   return fm.serveContent("list_pdfs", {table_data = table_data})
+end)
+
+fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
+  local s = uti.load_settings()
+  return fm.serveContent("tags", {tag = r.params.tag,
+                                  offset = (r.params.offset or s.offset),
+                                  limit = (r.params.limit or s.limit)})
 end)
 
 fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
   local selected = parse_metadata_filters(r)
   local table_data = dbm.filter_pdfs(selected)
-  return fm.serveContent("list_pdfs", {table_data = table_data, selected = selected})
+  local table_header = dbm.get_metadata_keys()
+  return fm.serveContent("list_pdfs", {table_data = table_data,
+                                       table_header=table_header,
+                                       selected = selected})
 end)
 
 fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
@@ -64,10 +76,6 @@ end)
 
 fm.setRoute(fm.GET"/settings(/)", function(r)
   return fm.serveContent("settings", {settings = uti.load_settings()})
-end)
-
-fm.setRoute(fm.POST"/settings/:settings", function(r)
-  -- do something!
 end)
 
 -- General

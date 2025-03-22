@@ -1,5 +1,37 @@
-{% function block.pages_header() %}
-  {% block.pages.pages_header() %}
+{% function block.content_sidebar() %}
+{% all_values = {} %}
+{% for i, key in ipairs(vars.header) do %}
+  {% all_values[key] = vars.get_metadata_values(key) %}
+{% end %}
+
+<h4>Filter</h4>
+<form action="/pdfs" name="filter" method="get">
+{% for key, values in pairs(all_values) do %}
+  <fieldset>
+  {% for i, value in ipairs(values) do %}
+    {% if i == 1 then %}
+      <legend>{%& key %}</legend>
+      <div class="cluster"><div>
+    {% end %}
+    <div>
+      <input hx-push-url="true" hx-include="closest form" hx-get="/table/pdfs" hx-target="#table-content" type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
+      {% if selected == nil then %}
+        checked
+      {% else %}
+        {% if vars.uti.value_in_array(value, selected[key]) then %}checked{% end %}
+      {% end %}
+      />
+      <label for="{{%& key %}[]">{%& value %}</label>
+    </div>
+  {% end %}
+    </div></div>
+  </fieldset>
+{% end %}
+<input type="submit" value="update"/>
+</form>
+{% selected = nil %}
+{% end %}
+{% function block.content_header() %}
   {% local c = vars.uti.len(table_data) %}
   {% if c > 1 then %}
     <p>There are {%& c %} matching PDFs</p>
@@ -11,7 +43,7 @@
 {% end %}
 {% end %}
 
-{% function block.pages_content() %}
+{% function block.content_body() %}
   {% if vars.uti.len(table_data) > 0 then %}
     <div id="table-content">
       {% render("partial/table", {table_data=table_data, table_header=vars.header, show_id=true}) %}
@@ -21,4 +53,4 @@
   {% end %}
 {% end %}
 
-{% render('pages', {pages_title="PDFs", current_page="pdfs"}) %}
+{% render('layouts/with_sidebar', {current_page="pdfs"}) %}

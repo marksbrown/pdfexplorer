@@ -1,0 +1,16 @@
+{% function block.content_header() %}{% end %}
+{% function block.content_sidebar() %}{% end %}
+{% function block.content_body() %}{% end %}
+
+{% function block.content() %}
+<div id="content_header">
+{% block.content_header() %}
+</div>
+
+<div class="with-sidebar">
+  <div class="halfwidth">{% block.content_sidebar() %}</div>
+  <div id="content_body">{% block.content_body() %}</div>
+</div>
+{% end %}
+
+{% render('layouts/base', {current_page=current_page}) %}

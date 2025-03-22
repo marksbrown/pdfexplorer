@@ -7,7 +7,7 @@ require "api"
 
 --Config
 local links = {home = "/",
-               tags = '/tags',
+               tags = '/tags/all',
                pdfs = '/pdfs/all',
                settings = '/settings/'}
 

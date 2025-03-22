@@ -12,29 +12,21 @@
 {% else %}
 {%& value %}
 {% end %}
-
 {% end %}
 
-{% function populate_table(data, header) %}
 <table>
 <tr>
-<th>id</th>
-{% for i, key in ipairs(header) do %}<th>{%& key %}</th>{% end %}
+{% if show_id then %}<th>id</th>{% end %}
+{% for i, key in ipairs(table_header) do %}<th>{%& key %}</th>{% end %}
 </tr>
-  {% for rowid, row in pairs(data) do %}
+  {% for rowid, row in pairs(table_data) do %}
   <tr>
+  {% if show_id then %}
   <td>{%& block.generate_link("id", rowid) %}</td>
-
-  {% for k, key in ipairs(header) do %}
+  {% end %}
+  {% for k, key in ipairs(table_header) do %}
     <td>{%& block.generate_link(key, row[key]) %}</td>
   {% end %}
 </tr>
 {% end %}
 </table>
-{% end %}
-
-{% populate_table(table_data, table_header) %}
-
-
-
-
