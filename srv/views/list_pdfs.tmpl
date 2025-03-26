@@ -5,32 +5,10 @@
 {% end %}
 
 <h4>Filter</h4>
-<form action="/pdfs" name="filter" method="get">
-{% for key, values in pairs(all_values) do %}
-  <fieldset>
-  {% for i, value in ipairs(values) do %}
-    {% if i == 1 then %}
-      <legend>{%& key %}</legend>
-      <div class="cluster"><div>
-    {% end %}
-    <div>
-      <input hx-push-url="true" hx-include="closest form" hx-get="/table/pdfs" hx-target="#table-content" type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
-      {% if selected == nil then %}
-        checked
-      {% else %}
-        {% if vars.uti.value_in_array(value, selected[key]) then %}checked{% end %}
-      {% end %}
-      />
-      <label for="{{%& key %}[]">{%& value %}</label>
-    </div>
-  {% end %}
-    </div></div>
-  </fieldset>
+{% render('partial/filter', {form_action = "/pdfs", filters = all_values, form_ajax_update = "/table/pdfs"}) %}
+
 {% end %}
-<input type="submit" value="update"/>
-</form>
-{% selected = nil %}
-{% end %}
+
 {% function block.content_header() %}
   {% local c = vars.uti.len(table_data) %}
   {% if c > 1 then %}

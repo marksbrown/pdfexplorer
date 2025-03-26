@@ -7,8 +7,8 @@ require "api"
 
 --Config
 local links = {home = "/",
-               tags = '/tags/all',
-               pdfs = '/pdfs/all',
+               tags = '/data/tags/all',
+               pdfs = '/data/pdfs/all',
                settings = '/settings/'}
 
 local rolecall = {'home', 'pdfs', 'tags', 'settings'}

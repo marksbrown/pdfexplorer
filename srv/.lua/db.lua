@@ -29,7 +29,53 @@ dbm.get_all_pdfs = function()
   return parsed
 end
 
+dbm.get_metadata_keys = function()
+  local cmd = [[
+    select distinct key
+    from pdfs, json_tree(pdfs.metadata)
+    where json_tree.type not in ('object')
+    order by key ASC;
+  ]]
+  local d = dbm.db:fetchAll(cmd)
+  local parsed = {}
+  for k,v in ipairs(d) do
+    parsed[#parsed + 1] = v.key
+  end
+  return parsed
+end
+
+-- Filter Operations
+-- This is where we must ensure the following
+-- 1. Stateless - we can cache results or write better SQL but it cannot preserve state
+-- 2. Metadata invariant - Provided metadata can and will vary. Don't assume field names
+-- 3. Secure - this is where injection attacks will arrive. So don't use string operations
+-- on data insertion!
+
 dbm.get_matching_pdfs = function(key, value)
+  local in_clause = string.rep("?, ", #value):sub(1, -3) -- magic
+  local cmd = [[
+    select pdfs.id
+    from pdfs, json_tree(pdfs.metadata)
+    where key not null
+    and key = (?)
+    and value in (]]
+    ..
+    in_clause
+    ..[[)
+    order by pdfs.id
+    DESC;
+    ]]
+    local raw_data = dbm.db:fetchAll(cmd, key, table.unpack(value))
+    local parsed = {}
+    for k, v in pairs(raw_data) do
+      parsed[#parsed + 1] = v.id
+    end
+
+    return parsed
+end
+
+
+dbm.get_matching_metadata = function(key, value)
   -- value can be str or tbl
   -- thus need to alter cmd to fit unknown length of value
   local in_clause = string.rep("?, ", #value):sub(1, -3) -- magic
@@ -53,33 +99,34 @@ dbm.get_matching_pdfs = function(key, value)
     return parsed
 end
 
-dbm.get_matching_tags = function(key, value)
+dbm.get_matching_tags = function(pdfs)
+  if #pdfs == 0 then
+    print("Warning! No pdfs provided!")
+    return nil
+  end
+
+  local in_clause = string.rep("?, ", #pdfs):sub(1, -3) -- magic
   local cmd = [[
-  select tags.tag, count
-  from tags
-  join pagetags
-  on pagetags.tag = tags.tag
-  where (?)
-  like (?)
-  group by tags.tag;
-  ]]
-  return dbm.db:fetchAll(cmd, key, value)
+  select tag, count(tag) as count
+  from pagetags
+  where pagetags.id in (]]
+  ..
+  in_clause
+  ..[[)
+  group by tag
+  order by count desc;]]
+  return dbm.db:fetchAll(cmd, table.unpack(pdfs))
 end
 
-dbm.get_metadata_keys = function()
-  local cmd = [[
-    select distinct key
-    from pdfs, json_tree(pdfs.metadata)
-    where json_tree.type not in ('object')
-    order by key ASC;
-  ]]
-  local d = dbm.db:fetchAll(cmd)
+local f = function()
+  local raw_data = dbm.db:fetchAll(cmd, table.unpack(pdfs))
   local parsed = {}
-  for k,v in ipairs(d) do
-    parsed[#parsed + 1] = v.key
+  for k,v in pairs(raw_data) do
+    parsed[v.tag] = {tag = v.tag, count = v.count}
   end
   return parsed
 end
+
 
 dbm.get_metadata_values = function(key)
   local cmd = [[
@@ -184,24 +231,58 @@ dbm.get_all_tags = function(pdf)
   pagetags 
   where pagetags.id = (?)
   GROUP BY tag
-  ORDER BY tag
-  ASC;]]
+  ORDER BY count
+  DESC;]]
   return dbm.db:fetchAll(cmd, pdf)
 else
   local cmd = [[
   SELECT tag, COUNT(*) as count
   FROM pagetags
   GROUP BY tag
-  ORDER BY tag
-  ASC;]]
+  ORDER BY count
+  DESC;]]
   return dbm.db:fetchAll(cmd)
 end
 end
 
-dbm.filter_pdfs = function(filter_by)
+dbm.filter = function(func, filter_by)  -- function, table[key, value(s)]
+  -- Produce a union of all requested filters
   local results = nil
   for mkey, mvalue in pairs(filter_by) do
-    local new_result = dbm.get_matching_pdfs(mkey, mvalue) 
+    local new_result = func(mkey, mvalue) 
+    if results == nil then
+      results = new_result
+    else
+      results = uti.union(results, new_result)
+      if uti.len(results) == 0 then  -- none matching found
+        return results
+      end
+    end
+  end
+  return results
+end
+
+dbm.filter_pdfs = function(filter_by)
+  return dbm.filter(dbm.get_matching_pdfs, filter_by)
+end
+
+dbm.filter_metadata = function(filter_by)
+  return dbm.filter(dbm.get_matching_metadata, filter_by)
+end
+
+dbm.filter_tags = function(filter_by)
+  local pdfs = dbm.filter_pdfs(filter_by)
+  if #pdfs > 0 then
+    return dbm.get_matching_tags(pdfs)
+  else
+    return nil
+  end
+end
+
+dbm.filter_metadata_old = function(filter_by)
+  local results = nil
+  for mkey, mvalue in pairs(filter_by) do
+    local new_result = dbm.get_matching_metadata(mkey, mvalue) 
     if results == nil then
       results = new_result
     else
