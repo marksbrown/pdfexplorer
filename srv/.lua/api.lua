@@ -35,7 +35,6 @@ fm.setRoute("/table/pdfs/all", function(r)
                                            show_id = true})
 end)
 
-
 fm.setRoute("/table/tags", function(r)
   local selected = parse_metadata_filters(r)
   local table_header = {"tag", "count"}
@@ -84,18 +83,40 @@ end)
 
 fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
   local s = uti.load_settings()
+  local pages = dbm.load_images_by_tag(r.params.tag,
+                                       r.params.offset or s.offset,
+                                       r.params.limit or s.limit)
   return fm.serveContent("tags", {tag = r.params.tag,
-                                  offset = (r.params.offset or s.offset),
-                                  limit = (r.params.offset or s.limit)})
+                                  pages = pages})
 end)
 
-fm.setRoute({"/p/*path/:pdf", "/pdfs/*path/:pdf"}, function(r)
+fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, function(r)
   local s = uti.load_settings()
-  return fm.serveContent("pdfs", {path = r.params.path,
-                                  pdf = r.params.pdf,
-                                  fullpath = r.params.path .. "/" .. r.params.pdf,
-                                  offset = (r.params.offset or s.offset),
-                                  limit = (r.params.offset or s.limit)})
+  local pdf = r.params.pdf .. '.pdf'
+  local fullpath = r.params.path .. '/' .. pdf
+  local pages = dbm.load_images_by_pdf(fullpath,
+                                       r.params.offset or s.offset,
+                                       r.params.limit or s.limit)
+  return fm.serveContent("pdfs", {fullpath = fullpath,
+                                  pdf = pdf,
+                                  pages = pages})
+end)
+
+fm.setRoute({"/p/*path/:pdf.pdf/pages/:low[%d]-:high[%d]", 
+             "/pdfs/*path/:pdf.pdf/pages/:low[%d]-:high[%d]"}, function(r)
+  local low = r.params.low
+  local high = r.params.high
+  if r.params.low > r.params.high then
+    return "Invalid parameters"
+  end
+  
+  local pdf = r.params.pdf .. '.pdf'
+  local fullpath = r.params.path .. '/' .. pdf
+  local pages = dbm.load_images_by_page_range(fullpath, low, high)
+  
+  return fm.serveContent("pdfs", {fullpath = fullpath,
+                                  pdf = pdf,
+                                  pages = pages})
 end)
 
 

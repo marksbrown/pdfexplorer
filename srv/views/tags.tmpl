@@ -12,12 +12,8 @@
   {% end %}
 {% end %}
 
-{% local data = vars.load_images_by_tag(tag, offset, limit) %}
-
 {% function block.content_body() %}
-{% for i = 1, #data do %}
-  {% render('partial/page', {page_data = data[i]}) %}
-{% end %}
+{% render('partial/pages', {pages = pages}) %}
 {% end %}
 
 {% render('layouts/with_sidebar', {current_page="tags"}) %}

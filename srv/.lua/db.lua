@@ -175,6 +175,17 @@ dbm.load_images_by_pdf = function(pdf, offset, max_pages)
 return dbm.db:fetchAll(cmd, pdf, offset, offset + max_pages)
 end
 
+dbm.load_images_by_page_range = function(pdf, low, high)
+  local cmd = [[
+  select * from
+  (select pages.id, page, png from pages
+  where pages.id = (?)
+  and pages.page >= (?)
+  and pages.page <= (?)
+  order by pages.page);
+  ]]
+  return dbm.db:fetchAll(cmd, pdf, low, high)
+end
 
 dbm.load_images_by_tag = function(tag, offset, max_pages)
   local cmd = [[
