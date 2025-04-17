@@ -1,5 +1,21 @@
+
 {% function block.new_page(image_base_64) %}
 <img class="page-img" src="data:image/png;base64, {%& image_base_64 %}">
+{% end %}
+
+{% function block.generate_link(name, value, count) %}
+{% if count == nil then %}
+{% c = '' %}
+{% else %}
+{% c = ' (' .. count .. ')' %}
+{% end %}
+{% if name == "tag" then %}
+<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value .. c %}</a>
+{% elseif name == "id" then %}
+<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
+{% else %}
+{%& value %}
+{% end %}
 {% end %}
 
 <div class="page">

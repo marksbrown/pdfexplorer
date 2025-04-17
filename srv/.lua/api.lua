@@ -90,23 +90,31 @@ fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
                                   pages = pages})
 end)
 
-fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, function(r)
+
+local pdf_page_handler = function(template)
+  return function(r)
   local s = uti.load_settings()
   local pdf = r.params.pdf .. '.pdf'
   local fullpath = r.params.path .. '/' .. pdf
   local pages = dbm.load_images_by_pdf(fullpath,
                                        r.params.offset or s.offset,
                                        r.params.limit or s.limit)
-  return fm.serveContent("pdfs", {fullpath = fullpath,
+  return fm.serveContent(template, {fullpath = fullpath,
                                   pdf = pdf,
                                   pages = pages})
-end)
+  end
 
-fm.setRoute({"/p/*path/:pdf.pdf/pages/:low[%d]-:high[%d]", 
-             "/pdfs/*path/:pdf.pdf/pages/:low[%d]-:high[%d]"}, function(r)
-  local low = r.params.low
-  local high = r.params.high
-  if r.params.low > r.params.high then
+end
+
+fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, pdf_page_handler('pdfs'))
+fm.setRoute({"/raw/p/*path/:pdf.pdf", "/raw/pdfs/*path/:pdf.pdf"}, pdf_page_handler('partial/pages'))
+
+fm.setRoute({"/p/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])", 
+             "/pdfs/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])"}, function(r)
+  local s = uti.load_settings()
+  local low = r.params.low or 1
+  local high = r.params.high or s.max_pages
+  if tonumber(low) > tonumber(high) then
     return "Invalid parameters"
   end
   
