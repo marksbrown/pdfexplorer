@@ -101,7 +101,8 @@ function m.concat(x, ...)
   return x
 end
 
-function m.sorted(arr, ascending)
+function m.sorted(arr, ascending, key)
+  local key = key or function(x) return x end
   local ascending = ascending or true
   if #arr <= 1 then
     return arr
@@ -112,15 +113,15 @@ function m.sorted(arr, ascending)
   local middle = {}
   local high = {}
   for i, k in ipairs(arr) do
-    if k < pivot then
+    if key(k) < key(pivot) then
       low[#low + 1] = k
-    elseif k == pivot then
+    elseif key(k) == key(pivot) then
       middle[#middle + 1] = pivot
     else
       high[#high + 1] = k
     end
   end
-  local r = m.concat(m.sorted(low), middle, m.sorted(high))
+  local r = m.concat(m.sorted(low, ascending, key), middle, m.sorted(high, ascending, key))
   return r
 end
 
@@ -134,6 +135,9 @@ function t.test_sorted()
   for k, test_data in ipairs(data) do
     print("sorted:: ", m.dump(test_data), m.dump(m.sorted(test_data)))
   end
+  
+  local test_data =  {"az", "by", "cx"}
+  print("sorted (with key)::", m.dump(m.sorted(test_data, true, function(x) return string.sub(x, 2, 2) end)))
 end
 
 t.test_sorted()
