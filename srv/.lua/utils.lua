@@ -2,6 +2,8 @@ local fm = require "fullmoon"
 
 local m = {}
 
+
+
 -- linear search
 function m.value_in_arr(value, arr)
   for i,v in ipairs(arr) do
@@ -89,5 +91,51 @@ function m.load_settings()
   unix.close(fd)
   return params
 end
+
+function m.concat(x, ...) 
+  for k, r in ipairs({...}) do
+    for i, v in ipairs(r) do
+      x[#x + 1] = v
+    end
+  end
+  return x
+end
+
+function m.sorted(arr, ascending)
+  local ascending = ascending or true
+  if #arr <= 1 then
+    return arr
+  end
+  local mid = #arr // 2
+  local pivot = arr[mid]
+  local low = {}
+  local middle = {}
+  local high = {}
+  for i, k in ipairs(arr) do
+    if k < pivot then
+      low[#low + 1] = k
+    elseif k == pivot then
+      middle[#middle + 1] = pivot
+    else
+      high[#high + 1] = k
+    end
+  end
+  local r = m.concat(m.sorted(low), middle, m.sorted(high))
+  return r
+end
+
+local t = {}  -- testing
+function t.test_sorted()
+  local data = {{{1,2}, {3,4}}, {{}, {1,2,3,4}}, {{}, {}}}
+  for k, test_data in ipairs(data) do
+    print("concat :: ", m.dump(test_data), m.dump(m.concat(test_data)))
+  end
+  local data = {{'a', 'd', 'b', 'c'}, {1,3,2,4}, {1,1,1,1}, {1}, {}}
+  for k, test_data in ipairs(data) do
+    print("sorted:: ", m.dump(test_data), m.dump(m.sorted(test_data)))
+  end
+end
+
+t.test_sorted()
 
 return m

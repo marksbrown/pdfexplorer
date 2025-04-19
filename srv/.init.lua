@@ -9,9 +9,10 @@ require "api"
 local links = {home = "/",
                tags = '/data/tags/all',
                pdfs = '/data/pdfs/all',
+               compose = '/data/compositions/all',
                settings = '/settings/'}
 
-local rolecall = {'home', 'pdfs', 'tags', 'settings'}
+local rolecall = {'home', 'compose', 'pdfs', 'tags', 'settings'}
 
 --Variables available to templates
 fm.setTemplateVar("title", "PDF Explorer")
