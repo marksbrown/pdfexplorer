@@ -1,5 +1,5 @@
 <form action={%& form_action %} name="filter" method="get">
-{% for key, values in pairs(filters) do %}
+{% for key, values in pairs(vars.uti.sorted(filters, true, function(x) return x[1] end)) do %}
   <fieldset>
   {% for i, value in ipairs(values) do %}
     {% if i == 1 then %}
