@@ -96,11 +96,19 @@ local pdf_page_handler = function(template)
   local s = uti.load_settings()
   local pdf = r.params.pdf .. '.pdf'
   local fullpath = r.params.path .. '/' .. pdf
-  local pages = dbm.load_images_by_pdf(fullpath,
-                                       r.params.offset or s.offset,
-                                       r.params.limit or s.limit)
+  local low = r.params.low or 1
+  local high = r.params.high or s.max_pages
+  if r.params.low ~= nil or r.params.high ~= nil then
+      pages = dbm.load_images_by_page_range(fullpath, low, high)
+  else
+  pages = dbm.load_images_by_pdf(fullpath,
+                                       s.offset,
+                                       s.limit)
+  end
   return fm.serveContent(template, {fullpath = fullpath,
                                   pdf = pdf,
+                                  low = low,
+                                  high = high,
                                   pages = pages})
   end
 
@@ -123,6 +131,8 @@ fm.setRoute({"/p/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])",
   local pages = dbm.load_images_by_page_range(fullpath, low, high)
   
   return fm.serveContent("pdfs", {fullpath = fullpath,
+                                  low = low,
+                                  high = high,
                                   pdf = pdf,
                                   pages = pages})
 end)

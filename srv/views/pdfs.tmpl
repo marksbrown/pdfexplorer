@@ -1,12 +1,17 @@
-{% function block.pages_header() %}
-  {% block.pages.pages_header() %}
-  <h3>{%& path %}</h3>
+{% function block.content_header() %}
+  <h3>{%& pdf %}</h3>
     {% local tags_found = vars.get_all_tags(pdf) %}
   <div id="tags">
     {% for i = 1, #tags_found do %}
       {% block.generate_link("tag", tags_found[i].tag, tags_found[i].count) %}
     {% end %}
   </div>
+
+<form name="pages/update", method="get">
+  <label>From:<input type="number" name="low" placeholder="{%& low %}"/></label>
+  <label>To:<input type="number" name="high" placeholder="{%& high %}"/></label>
+  <button value="update" type="submit">Update</button>
+</form>
 {% end %}
 
 
