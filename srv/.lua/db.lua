@@ -4,12 +4,12 @@ local uti = require "utils"
 
 local dbm = {}
 
-dbm.load_db = function()
+dbm.load_db = function(name)
   -- 1. load settings
   -- 2. get name of DB
   -- 3. return
   settings = uti.load_settings()
-  name = settings["database"]["name"]
+  name = name or settings["database"]["name"]
   return assert(fm.makeStorage(name))
 end
 

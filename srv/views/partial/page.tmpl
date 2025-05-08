@@ -25,7 +25,7 @@
     {% end %}
     {% block.page_content() %}
   </div>
-  {% if vars.uti.show_meta then %}
+  {% if vars.settings.show_meta then %}
   <div class="page-meta">
 {% function block.page_meta() %}
   Page {%& page_data.page %} from {% block.generate_link("id", page_data.id) %}

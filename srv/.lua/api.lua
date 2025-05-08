@@ -21,6 +21,31 @@ local function parse_metadata_filters(r)
   return selected
 end
 
+-- Reused functions
+
+local pdf_page_handler = function(template)
+  return function(r)
+  local s = uti.load_settings()
+  local pdf = r.params.pdf .. '.pdf'
+  local fullpath = r.params.path .. '/' .. pdf
+  local low = r.params.low or 1
+  local high = r.params.high or s.max_pages
+  if r.params.low ~= nil or r.params.high ~= nil then
+      pages = dbm.load_images_by_page_range(fullpath, low, high)
+  else
+  pages = dbm.load_images_by_pdf(fullpath,
+                                       s.offset,
+                                       s.limit)
+  end
+  return fm.serveContent(template, {fullpath = fullpath,
+                                  pdf = pdf,
+                                  low = low,
+                                  high = high,
+                                  pages = pages})
+  end
+
+end
+
 -- Partial Routes for AJAX requests
 fm.setRoute("/table/pdfs", function(r)
   local selected = parse_metadata_filters(r)
@@ -51,19 +76,21 @@ fm.setRoute("/table/tags/all", function(r)
 end)
 
 -- Full Routes
-fm.setRoute({"/data/t/all", "/data/tags/all"}, function(r)
+-- Fetch summary pages of each
+fm.setRoute({"/t/all", "/tags/all"}, function(r)
   local table_header = {"tag", "count"}
   return fm.serveContent("list_tags", {table_data = dbm.get_all_tags(),
                                        table_header = table_header,
                                        show_id = false})
 end)
 
-fm.setRoute({"/data/p/all", "/data/pdfs/all"}, function(r)
+fm.setRoute({"/p/all", "/pdfs/all"}, function(r)
   local table_data = dbm.get_all_pdfs()
   return fm.serveContent("list_pdfs", {table_data = table_data})
 end)
 
-fm.setRoute({"/data/t/:tag", "/data/tags/:tag"}, function(r)
+-- Fetch specific of each
+fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
   local s = uti.load_settings()
   local selected = parse_metadata_filters(r)
   local table_data = dbm.filter_tags(selected)
@@ -91,31 +118,9 @@ fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
 end)
 
 
-local pdf_page_handler = function(template)
-  return function(r)
-  local s = uti.load_settings()
-  local pdf = r.params.pdf .. '.pdf'
-  local fullpath = r.params.path .. '/' .. pdf
-  local low = r.params.low or 1
-  local high = r.params.high or s.max_pages
-  if r.params.low ~= nil or r.params.high ~= nil then
-      pages = dbm.load_images_by_page_range(fullpath, low, high)
-  else
-  pages = dbm.load_images_by_pdf(fullpath,
-                                       s.offset,
-                                       s.limit)
-  end
-  return fm.serveContent(template, {fullpath = fullpath,
-                                  pdf = pdf,
-                                  low = low,
-                                  high = high,
-                                  pages = pages})
-  end
-
-end
 
 fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, pdf_page_handler('pdfs'))
-fm.setRoute({"/raw/p/*path/:pdf.pdf", "/raw/pdfs/*path/:pdf.pdf"}, pdf_page_handler('partial/pages'))
+fm.setRoute({"/data/p/*path/:pdf.pdf", "/data/pdfs/*path/:pdf.pdf"}, pdf_page_handler('partial/pages'))
 
 fm.setRoute({"/p/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])",
              "/pdfs/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])"}, pdf_page_handler('pdfs'))

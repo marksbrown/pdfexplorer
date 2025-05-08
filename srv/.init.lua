@@ -7,12 +7,12 @@ require "api"
 
 --Config
 local links = {home = "/",
-               tags = '/data/tags/all',
-               pdfs = '/data/pdfs/all',
-               compose = '/data/compositions/all',
+               tags = '/tags/all',
+               pdfs = '/pdfs/all',
                settings = '/settings/'}
 
-local rolecall = {'home', 'compose', 'pdfs', 'tags', 'settings'}
+local rolecall = {'home', 'pdfs', 'tags', 'settings'}
+
 
 --Variables available to templates
 fm.setTemplateVar("title", "PDF Explorer")
@@ -21,6 +21,7 @@ fm.setTemplateVar("rollcall", rolecall)
 fm.setTemplateVar("lang", "en_gb")
 fm.setTemplateVar("siteurl", "")
 fm.setTemplateVar("header", dbm.get_metadata_keys())  -- Runs once at startup 
+fm.setTemplateVar("settings", uti.load_settings())
 
 --Functions available to templates
 fm.setTemplateVar("uti", uti)  -- make utilities available to templates
