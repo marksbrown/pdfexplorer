@@ -1,6 +1,4 @@
 {
-  "limit" : -1,
-  "offset" : 0,
   "show_meta" : true,
   "max_pages" : 100,
   "database" : {"name" : "compsci.db", "loc" : "."}

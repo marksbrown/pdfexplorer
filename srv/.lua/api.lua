@@ -34,8 +34,10 @@ local pdf_page_handler = function(template)
       pages = dbm.load_images_by_page_range(fullpath, low, high)
   else
   pages = dbm.load_images_by_pdf(fullpath,
-                                       s.offset,
-                                       s.limit)
+                                       r.params.limit or s.max_pages)
+  end
+  if #pages < tonumber(high) - tonumber(low) then
+    high = #pages + tonumber(low)
   end
   return fm.serveContent(template, {fullpath = fullpath,
                                   pdf = pdf,
@@ -110,10 +112,14 @@ end)
 
 fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
   local s = uti.load_settings()
+  local limit = r.params.limit or s.max_pages
   local pages = dbm.load_images_by_tag(r.params.tag,
-                                       r.params.offset or s.offset,
-                                       r.params.limit or s.limit)
+                                       limit)
+  if tonumber(limit) > #pages then
+    limit = #pages
+  end
   return fm.serveContent("tags", {tag = r.params.tag,
+                                  limit = limit,
                                   pages = pages})
 end)
 

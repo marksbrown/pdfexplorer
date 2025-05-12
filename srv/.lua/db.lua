@@ -164,15 +164,15 @@ return dbm.db:fetchAll(cmd, pdf)
 end
 
 
-dbm.load_images_by_pdf = function(pdf, offset, max_pages)
+dbm.load_images_by_pdf = function(pdf, max_pages)
   local cmd = [[
   select * from
   (select pages.id, page, png from pages
   where pages.id = (?) 
   order by pages.page)
-  limit (?), (?);
+  limit (?);
   ]]
-return dbm.db:fetchAll(cmd, pdf, offset, offset + max_pages)
+return dbm.db:fetchAll(cmd, pdf, max_pages)
 end
 
 dbm.load_images_by_page_range = function(pdf, low, high)
@@ -187,7 +187,7 @@ dbm.load_images_by_page_range = function(pdf, low, high)
   return dbm.db:fetchAll(cmd, pdf, low, high)
 end
 
-dbm.load_images_by_tag = function(tag, offset, max_pages)
+dbm.load_images_by_tag = function(tag, max_pages)
   local cmd = [[
   SELECT * from (select pages.id, pages.page, png from pages
   join pagetags
@@ -195,9 +195,9 @@ dbm.load_images_by_tag = function(tag, offset, max_pages)
   and pages.page == pagetags.page
   where pagetags.tag = (?)
   order by pages.id desc)
-  limit (?), (?);
+  limit (?);
   ]]
-  return dbm.db:fetchAll(cmd, tag, offset, offset + max_pages)
+  return dbm.db:fetchAll(cmd, tag, max_pages)
 end
 
 dbm.pdfs_by_tag = function(tag)
