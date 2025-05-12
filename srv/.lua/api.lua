@@ -90,7 +90,7 @@ fm.setRoute({"/p/all", "/pdfs/all"}, function(r)
 end)
 
 -- Fetch specific of each
-fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
+fm.setRoute({"/t(/)", "/tags(/)"}, function(r)
   local s = uti.load_settings()
   local selected = parse_metadata_filters(r)
   local table_data = dbm.filter_tags(selected)
@@ -99,7 +99,7 @@ fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
                                        selected = selected})
 end)
 
-fm.setRoute({"/data/p(/)", "/data/pdfs(/)"}, function(r)
+fm.setRoute({"/p(/)", "/pdfs(/)"}, function(r)
   local selected = parse_metadata_filters(r)
   local table_data = dbm.filter_metadata(selected)
   local table_header = dbm.get_metadata_keys()
@@ -108,7 +108,7 @@ fm.setRoute({"/data/p(/)", "/data/pdfs(/)"}, function(r)
                                        selected = selected})
 end)
 
-fm.setRoute({"/t/:tag", "/tags/:tag"}, function(r)
+fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
   local s = uti.load_settings()
   local pages = dbm.load_images_by_tag(r.params.tag,
                                        r.params.offset or s.offset,

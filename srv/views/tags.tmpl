@@ -9,6 +9,12 @@
     No pages with '{%& tag %}' have been found!
   </p>
   {% end %}
+
+<form name="pages/update", method="get">
+  <label>Limit:<input type="number" name="limit" placeholder="{%& limit %}"/></label>
+  <button value="update" type="submit">Update</button>
+</form>
+
 {% end %}
 
 {% function block.content_body() %}
