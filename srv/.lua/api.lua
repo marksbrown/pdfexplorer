@@ -79,6 +79,25 @@ end)
 
 -- Full Routes
 -- Fetch summary pages of each
+--
+
+fm.setRoute({"/v/all", "/views/all"}, function(r)
+  local s = uti.load_settings()
+  return fm.serveContent("views", {current_view=s.default_view})
+end)
+
+fm.setRoute({"/v/set", "/views/set", method="POST"}, function(r)
+  local s = uti.load_settings()
+  local view_name = r.params.view or s.default_view
+  if r.params.view == nil then
+    local code = 304
+  else
+    local code = 201
+  end
+  return fm.serveRedirect(code, "/views/" .. view_name)
+end)
+
+
 fm.setRoute({"/t/all", "/tags/all"}, function(r)
   local table_header = {"tag", "count"}
   return fm.serveContent("list_tags", {table_data = dbm.get_all_tags(),
@@ -124,6 +143,13 @@ fm.setRoute({"/t/:tag(/)", "/tags/:tag(/)"}, function(r)
 end)
 
 
+fm.setRoute({"/v(/*path)/:view", "/views(/*path)/:view"}, function(r)
+  local path = r.params.path or ""
+  local view_name = r.params.view
+  local view = path .. "/" .. view_name
+  print("Current view :", view)
+  return fm.serveRedirect("/v/all")
+end)
 
 fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, pdf_page_handler('pdfs'))
 fm.setRoute({"/data/p/*path/:pdf.pdf", "/data/pdfs/*path/:pdf.pdf"}, pdf_page_handler('partial/pages'))

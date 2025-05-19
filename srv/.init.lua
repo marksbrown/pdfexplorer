@@ -7,11 +7,12 @@ require "api"
 
 --Config
 local links = {home = "/",
+               views = '/views/all',
                tags = '/tags/all',
                pdfs = '/pdfs/all',
                settings = '/settings/'}
 
-local rolecall = {'home', 'pdfs', 'tags', 'settings'}
+local rolecall = {'home', 'views', 'pdfs', 'tags', 'settings'}
 
 
 --Variables available to templates
