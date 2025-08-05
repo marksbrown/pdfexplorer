@@ -1,8 +1,5 @@
 local fm = require "fullmoon"
-
 local m = {}
-
-
 
 -- linear search
 function m.value_in_arr(value, arr)

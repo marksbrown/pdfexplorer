@@ -1,13 +1,13 @@
 {% function block.content_header() %}
-  {% local tag_count = vars.get_tag_count(tag) %}
-  <p>
-  {% if tag_count > 1 then %}
-    We have found {%& tag_count %} pages with tag {%& block.generate_link('tag', tag) %}
-  {% elseif tag_count == 1 then %}
-    We have found 1 page with tag '{%& tag %}'
-  {% else %}
-    No pages with '{%& tag %}' have been found!
-  </p>
+  {% if other_filters ~= nil then %}
+  <ul>
+  {% for k, v in pairs(other_filters) do %}
+    <li {% if k == filter then %}class="current"{% end %}>
+    We have found {%& v %} pages with tag <a href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& tag %}</a>
+    in filter : <a href="/filters/{%& k %}">{%& k %}</a>
+    </li>
+  {% end %}
+  </ul>
   {% end %}
 
 <form name="pages/update", method="get">
@@ -18,7 +18,7 @@
 {% end %}
 
 {% function block.content_body() %}
-{% render('partial/pages', {pages = pages}) %}
+{% render('partial/pages', {show_meta = show_meta, pages = pages, filter = filter}) %}
 {% end %}
 
 {% render('layouts/with_sidebar', {current_page="tags"}) %}

@@ -1,11 +1,6 @@
 {% function block.content_header() %}
-  <h3>{%& pdf %}</h3>
-    {% local tags_found = vars.get_all_tags(pdf) %}
-  <div id="tags">
-    {% for i = 1, #tags_found do %}
-      {% block.generate_link("tag", tags_found[i].tag, tags_found[i].count) %}
-    {% end %}
-  </div>
+<h2>{%& pdf %}</h2>
+{% render("partial/tags", {filter = filter, data = tags_found, legend = "Tags Found"}) %}
 
 <form name="pages/update", method="get">
   <label>From:<input type="number" name="low" value="{%& low %}"/></label>
@@ -16,7 +11,7 @@
 
 
 {% function block.content_body() %}
-{% render('partial/pages', {pages = pages}) %}
+{% render('partial/pages', {show_meta = show_meta, filter = filter, pages = pages}) %}
 {% end %}
 
 {% render('layouts/with_sidebar', {current_page="pdfs"}) %}

@@ -1,0 +1,14 @@
+<table id="table_filters">
+<tr {% if filter == "all" then %}class="selected"{% end %}>
+    <td><a href="{%& vars.siteurl %}/filters/all">View All</td>
+</tr>
+{% local d = data or filters.data %}
+{% for rowid, row in pairs(d) do %}
+<tr {% if filter == row.name then %}class="selected" hx-redirect="/filters/all"{% end %}>
+    <td><a href="{%& vars.siteurl %}/filters/{%& row.name %}">{%& row.name %}</td>
+    {% if row.name ~= "all" then %}
+    <td><button hx-swap="outerHTML" hx-target="#table_filters" hx-delete="/filters/{%& row.name %}">Delete</button></td>
+    {% end %}
+  </tr>
+{% end %}
+</table>

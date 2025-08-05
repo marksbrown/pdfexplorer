@@ -1,36 +1,30 @@
-{% function block.generate_link(name, value, count) %}
-{% if count == nil then %}
-{% c = '' %}
-{% else %}
-{% c = ' (' .. count .. ')' %}
-{% end %}
-
-{% if name == "tag" then %}
-<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value .. c %}</a>
-{% elseif name == "id" then %}
-<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
+{% function block.generate_link(key, value) %}
+{% if url ~= nil then %}
+{% if url[key] ~= nil then %}
+<a href="{%& vars.siteurl %}/{%& url[key] %}/{%& value %}">{%& value %}</a>
 {% else %}
 {%& value %}
 {% end %}
 {% end %}
+{% end %}
 
-{% if table_data ~= nil then %}
-<table>
+{% if records > 0 then %}
+<table {% if table_id ~= nil then %}id="{%& table_id %}"{% end %}>
 <tr>
 {% if show_id then %}<th>id</th>{% end %}
-{% for i, key in ipairs(table_header) do %}<th>{%& key %}</th>{% end %}
+{% for i, key in ipairs(header) do %}<th>{%& key %}</th>{% end %}
 </tr>
-  {% for rowid, row in pairs(table_data) do %}
+{% for rowid, row in pairs(data) do %}
   <tr>
   {% if show_id then %}
   <td>{%& block.generate_link("id", rowid) %}</td>
   {% end %}
-  {% for k, key in ipairs(table_header) do %}
+  {% for k, key in ipairs(header) do %}
     <td>{%& block.generate_link(key, row[key]) %}</td>
   {% end %}
 </tr>
 {% end %}
 </table>
 {% else %}
-<p>No matching tags for specified filters</p>
+{%& table_id %} has no records
 {% end %}

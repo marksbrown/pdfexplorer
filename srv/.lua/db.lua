@@ -15,6 +15,113 @@ end
 
 dbm.db = dbm.load_db()
 
+dbm.get_all_filters = function()
+  local cmd = [[
+  SELECT substr(name, 9) as name
+  from sqlite_schema
+  where type="view"
+  and name like "myviews_%";
+  ]]
+  return dbm.db:fetchAll(cmd)
+end
+
+dbm.validate_filter = function(filter)
+  if filter == "all" then
+    return true
+  end
+  local all_filters = dbm.get_all_filters()
+  for k, v in pairs(all_filters) do 
+    if v.name == filter then
+      return true
+    end
+  end
+  return false
+end
+
+dbm.delete_filter = function(filter)
+  if dbm.validate_filter(filter) then
+    local cmd = [[DROP view myviews_]] .. filter
+    dbm.db:execute(cmd)
+  else
+    error(filter .. "not found")
+  end
+end
+
+dbm.count_filters = function()
+  local cmd = [[
+  select count(*) as count
+  from sqlite_schema
+  where type="view"
+  and name like "myviews_%";
+  ]]
+  return dbm.db:fetchOne(cmd).count
+end
+
+dbm.count_tags = function(filter)
+  local cmd = [[]]
+  if filter == "all" then
+    cmd = [[
+    select count(*) as count
+    from tags;
+    ]]
+    return dbm.db:fetchOne(cmd).count
+  else
+    assert(dbm.validate_filter(filter))
+    local cmd = [[
+    select count(distinct tag) as count
+    FROM 
+    pagetags
+    JOIN
+    myviews_]] .. filter .. [[ as mv
+    ON mv.id == pagetags.id
+    ]]
+  return dbm.db:fetchOne(cmd).count
+  end
+end
+
+dbm.count_tags_by_filter = function(tag)
+  local all_filters = dbm.get_all_filters()
+  local results = {}
+  for i, filter in ipairs(all_filters) do
+    local c = dbm.count_images_by_tag(tag, filter.name)
+    if c > 0 then
+      results[filter.name] = c
+    end
+  end
+  results['all'] = dbm.count_images_by_tag(tag, 'all')
+  return results  
+end
+
+dbm.get_count_pdfs_by_filter = function(filter)
+  local cmd = [[]]
+  if filter == nil or filter == "all" then
+    cmd = [[SELECT count(*) as count from pdfs]]
+  else
+    assert(dbm.validate_filter(filter))
+    cmd = [[SELECT count(*) as count from myviews_]] .. filter
+  end
+
+  r = dbm.db:fetchOne(cmd)
+  return r.count
+end
+
+dbm.get_pdfs_by_filter = function(filter)
+  if filter == nil or filter == "all" then
+    return dbm.get_all_pdfs()
+  end
+  local cmd = [[
+  SELECT id, metadata
+  FROM myviews_]] .. filter .. [[
+  ORDER BY id
+  DESC;]]
+  local raw_data = dbm.db:fetchAll(cmd)
+  local parsed = {}
+  for k,v in pairs(raw_data) do
+    parsed[v.id] = DecodeJson(v.metadata)
+  end
+  return parsed
+end
+
 dbm.get_all_pdfs = function()
   local cmd = [[
   SELECT id, metadata
@@ -74,7 +181,6 @@ dbm.get_matching_pdfs = function(key, value)
     return parsed
 end
 
-
 dbm.get_matching_metadata = function(key, value)
   -- value can be str or tbl
   -- thus need to alter cmd to fit unknown length of value
@@ -97,6 +203,48 @@ dbm.get_matching_metadata = function(key, value)
       parsed[v.id] = DecodeJson(v.metadata)
     end
     return parsed
+end
+
+
+dbm.create_new_filter = function(filter, filter_by)
+  local filter = "myviews_" .. filter
+  local cmd = [[]]
+  local parameters = {}
+  local first_run = true
+  valid_keys = dbm.get_metadata_keys()
+  for key, values in pairs(filter_by) do
+    assert(uti.value_in_arr(key, valid_keys), "Unknown key!")
+    local valid_values = dbm.get_metadata_values(key)
+    local tmp = [[
+    select pdfs.id, pdfs.metadata
+    from pdfs, json_tree(pdfs.metadata)
+    where key not null
+    and key = "]] .. key .. [["
+    and value in (]]
+    
+    for i, value in ipairs(values) do
+      assert(uti.value_in_arr(value, valid_values), "Unknown value!")
+      tmp = tmp .. [["]] .. value .. [["]]
+      if i < #values then
+        tmp = tmp .. [[,]]
+      else
+        tmp = tmp .. [[)]]
+      end
+    end
+    if first_run then
+      cmd = tmp
+      first_run = false
+    else
+      cmd = cmd .. " INTERSECT " .. tmp
+    end
+    parameters[#parameters + 1] = key
+    for i, value in ipairs(values) do
+      parameters[#parameters + 1] = value
+    end
+  end
+  cmd = "create view " .. filter .."(id, metadata) as " .. cmd
+
+  return dbm.db:execute(cmd)
 end
 
 dbm.get_matching_tags = function(pdfs)
@@ -128,17 +276,37 @@ local f = function()
 end
 
 
-dbm.get_metadata_values = function(key)
-  local cmd = [[
-select distinct value
-from pdfs, json_tree(pdfs.metadata)
-where key not null
-and key = (?);
-  ]]
+dbm.get_metadata_values = function(key, filter)
+  local cmd = [[]]
+  if filter == nil or filter == "all" then
+    cmd = [[
+      select distinct value
+      from pdfs, json_tree(pdfs.metadata)
+      where key not null
+      and key = (?);
+    ]]
+  else
+    assert(dbm.validate_filter(filter))
+    cmd = [[
+    select distinct value
+    from myviews_]] .. filter .. [[ as mv, json_tree(mv.metadata)
+    where key not null
+    and key = (?);
+      ]]
+  end
   local d = dbm.db:fetchAll(cmd, key)
   local parsed = {}
   for i, values in ipairs(d) do
     parsed[#parsed + 1] = values.value
+  end
+  return parsed
+end
+
+dbm.get_metadata = function(filter)
+  local keys = dbm.get_metadata_keys()
+  local parsed = {}
+  for i, key in ipairs(keys) do
+    parsed[key] = dbm.get_metadata_values(key, filter)
   end
   return parsed
 end
@@ -187,17 +355,56 @@ dbm.load_images_by_page_range = function(pdf, low, high)
   return dbm.db:fetchAll(cmd, pdf, low, high)
 end
 
-dbm.load_images_by_tag = function(tag, max_pages)
-  local cmd = [[
+dbm.count_images_by_tag = function(tag, filter)
+  local cmd = [[]]
+  if filter == "all" then
+  cmd = [[
+  SELECT count(*) as c from (select pages.id, pages.page, png from pages
+  join pagetags
+  on pages.id == pagetags.id
+  and pages.page == pagetags.page
+  where pagetags.tag = (?));
+  ]]
+  else
+    cmd = [[ 
+  SELECT count(*) as c from (select pages.id, pages.page, png from pages
+  join pagetags
+  on pages.id == pagetags.id
+  and pages.page == pagetags.page
+  join myviews_]] .. filter .. [[ as mv
+  on mv.id == pages.id
+  where pagetags.tag = (?));
+    ]]
+  end
+  return dbm.db:fetchOne(cmd, tag).c
+end
+
+dbm.load_images_by_tag = function(tag, filter, limit, offset)
+  local cmd = [[]]
+  if filter == "all" then
+  cmd = [[
   SELECT * from (select pages.id, pages.page, png from pages
   join pagetags
   on pages.id == pagetags.id
   and pages.page == pagetags.page
   where pagetags.tag = (?)
   order by pages.id desc)
-  limit (?);
+  limit (?), (?);
   ]]
-  return dbm.db:fetchAll(cmd, tag, max_pages)
+  else
+    cmd = [[ 
+  SELECT * from (select pages.id, pages.page, png from pages
+  join pagetags
+  on pages.id == pagetags.id
+  and pages.page == pagetags.page
+  join myviews_]] .. filter .. [[ as mv
+  on mv.id == pages.id
+  where pagetags.tag = (?)
+  order by pages.id desc)
+  limit (?), (?);
+    ]]
+  end
+  return dbm.db:fetchAll(cmd, tag, offset, limit)
 end
 
 dbm.pdfs_by_tag = function(tag)
@@ -234,13 +441,19 @@ dbm.tags_by_pdf_and_page = function(pdf, page)
   return dbm.db:fetchAll(cmd, pdf, page)
 end
 
-dbm.get_all_tags = function(pdf)
+dbm.get_tags_by_filter = function(filter, pdf)
+  if filter == nil or filter == "all" then
+    return dbm.get_all_tags(pdf)
+  end
   if pdf ~= nil then
     local cmd = [[
   SELECT tag, COUNT(*) as count
   FROM 
   pagetags 
-  where pagetags.id = (?)
+  JOIN
+  myviews_]] .. filter .. [[ as mv
+  ON mv.id == pagetags.id
+  WHERE pagetags.id = (?)
   GROUP BY tag
   ORDER BY count
   DESC;]]
@@ -249,6 +462,8 @@ else
   local cmd = [[
   SELECT tag, COUNT(*) as count
   FROM pagetags
+  JOIN myviews_]] .. filter .. [[ as mv
+  ON mv.id == pagetags.id
   GROUP BY tag
   ORDER BY count
   DESC;]]
@@ -256,54 +471,65 @@ else
 end
 end
 
-dbm.filter = function(func, filter_by)  -- function, table[key, value(s)]
-  -- Produce a union of all requested filters
-  local results = nil
-  for mkey, mvalue in pairs(filter_by) do
-    local new_result = func(mkey, mvalue) 
-    if results == nil then
-      results = new_result
+dbm.get_all_tags = function(pdf, low, high)
+  if pdf ~= nil then
+    if low == nil then
+      local cmd = [[
+      SELECT tag, COUNT(*) as count
+      FROM 
+      pagetags 
+      where pagetags.id = (?)
+      GROUP BY tag
+      ORDER BY count
+      DESC;]]
+      return dbm.db:fetchAll(cmd, pdf)
     else
-      results = uti.union(results, new_result)
-      if uti.len(results) == 0 then  -- none matching found
-        return results
-      end
-    end
-  end
-  return results
-end
-
-dbm.filter_pdfs = function(filter_by)
-  return dbm.filter(dbm.get_matching_pdfs, filter_by)
-end
-
-dbm.filter_metadata = function(filter_by)
-  return dbm.filter(dbm.get_matching_metadata, filter_by)
-end
-
-dbm.filter_tags = function(filter_by)
-  local pdfs = dbm.filter_pdfs(filter_by)
-  if #pdfs > 0 then
-    return dbm.get_matching_tags(pdfs)
+      local cmd = [[
+      SELECT tag, COUNT(*) as count
+      FROM 
+      pagetags 
+      where pagetags.id = (?)
+      and pagetags.page >= (?)
+      and pagetags.page <= (?)
+      GROUP BY tag
+      ORDER BY count
+      DESC;]]
+      return dbm.db:fetchAll(cmd, pdf, low, high)
+    end 
   else
-    return nil
+    local cmd = [[
+    SELECT tag, COUNT(*) as count
+    FROM pagetags
+    GROUP BY tag
+    ORDER BY count
+    DESC;]]
+    return dbm.db:fetchAll(cmd)
   end
-end
+  end
 
-dbm.filter_metadata_old = function(filter_by)
-  local results = nil
-  for mkey, mvalue in pairs(filter_by) do
-    local new_result = dbm.get_matching_metadata(mkey, mvalue) 
-    if results == nil then
-      results = new_result
-    else
-      results = uti.union(results, new_result)
-      if uti.len(results) == 0 then  -- none matching found
-        return results
-      end
-    end
+dbm.create_user_tables = function()
+  local cmd = [[
+  CREATE TABLE if not exists "filters" (
+    "id"	TEXT NOT NULL UNIQUE,
+    "metadata" TEXT,
+    PRIMARY KEY("id")
+  )
+
+  create TABLE if not exists "collections" (
+    "id" TEXT not NULL UNIQUE,
+    PRIMARY KEY("id")
+  );
+
+  CREATE TABLE if not exists "pagecollections" (
+    "pdfid"	TEXT,
+    "page"	INTEGER,
+    "collection"	TEXT,
+    FOREIGN KEY("pdfid") REFERENCES "pages"("id"),
+    FOREIGN KEY("page") REFERENCES "pages"("page"),
+    FOREIGN KEY("collection") REFERENCES "collections"("id"),
+    PRIMARY KEY("view","page","id")
+  );]]
+    return dbm.db:execute(cmd)
   end
-  return results
-end
 
 return dbm

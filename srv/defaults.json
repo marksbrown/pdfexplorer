@@ -1,6 +1,5 @@
 {
-  "show_meta" : true,
-  "default_view" : "default",
-  "max_pages" : 100,
+  "max_pages" : 20,
+  "siteurl" : "",
   "database" : {"name" : "compsci.db", "loc" : "."}
 }

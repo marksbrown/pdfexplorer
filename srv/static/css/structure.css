@@ -128,3 +128,7 @@ p{
 .doctest-block {
   overflow-x: scroll;
 }
+
+fieldset {
+  max-width: var(--max-width);
+}

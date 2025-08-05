@@ -1,0 +1,13 @@
+{% local url = url or {tags = "/filters/" .. filter .. "/tags",
+                       pdfs = "/filters/" .. filter .. "/pdfs"}
+                       %}
+
+<fieldset class="tags">
+<legend>{%& legend %}</legend>
+{% for i, row in ipairs(data) do %}
+  {% local t = row.tag %}
+  {% if row.count ~= nil then %}{% t = t .."(" .. row.count .. ")" %}{% end %}
+  <a class="tag" href="{%& url.tags %}/{%& row.tag %}">{%& t %}</a>
+{% end %}
+</div>
+</fieldset>

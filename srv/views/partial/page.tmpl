@@ -1,47 +1,31 @@
+{% function block.generate_link(key, value) %}
+{% if url ~= nil then %}
+{% if url[key] ~= nil then %}
+<a href="{%& vars.siteurl %}/{%& url[key] %}/{%& value %}">{%& value %}</a>
+{% else %}
+{%& value %}
+{% end %}
+{% end %}
+{% end %}
 
 {% function block.new_page(image_base_64) %}
 <img class="page-img" src="data:image/png;base64, {%& image_base_64 %}">
 {% end %}
 
-{% function block.generate_link(name, value, count) %}
-{% if count == nil then %}
-{% c = '' %}
-{% else %}
-{% c = ' (' .. count .. ')' %}
-{% end %}
-{% if name == "tag" then %}
-<a href="{%& vars.siteurl %}/tags/{%& value %}">{%& value .. c %}</a>
-{% elseif name == "id" then %}
-<a href="{%& vars.siteurl %}/pdfs/{%& value %}">{%& value .. c %}</a>
-{% else %}
-{%& value %}
-{% end %}
-{% end %}
-
-<div class="page">
-  <div class="page-content">
-    {% function block.page_content() %}
+<div id="{%& page_data.page %}" class="page"><div class="page-content">
+{% function block.page_content() %}
       {% block.new_page(page_data.png) %}
     {% end %}
-    {% block.page_content() %}
+{% block.page_content() %}
   </div>
-  {% if vars.settings.show_meta then %}
-  <div class="page-meta">
-{% function block.page_meta() %}
-  Page {%& page_data.page %} from {% block.generate_link("id", page_data.id) %}
-  {% local page_tags = vars.tags_by_pdf_and_page(page_data.id, page_data.page) %}
-  {% if #page_tags > 0 then %}
-    <div class="cluster page-tags">
-    <div>
-    {% for j = 1, #page_tags do %}
-      <div class="tag">{%& block.generate_link("tag", page_tags[j].tag, vars.get_tag_count(page_tags[j].tag)) %}</div>
-    {% end %}
-    </div>
-    </div>
-  {% end %}
-{% end %}
-
-    {% block.page_meta() %}
-  </div>
-    {% end %}
+{% if show_meta then %}
+  <div class="box page-meta">
+  Page {%& page_data.page %} from <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}#{%& page_data.page %}">{%& page_data.id %}</a>
+  {% local tags = vars.get_tags(page_data.id, page_data.page) %} 
+  {% render("partial/tags", {filter = filter, 
+                             data = tags, 
+                             url = {tags = "/filters/" .. filter .. "/tags",
+                                    pdfs = "/filters/" .. filter .. "/pdfs"}, 
+                             legend = "Page " .. page_data.page .. " tags"}) %}
 </div>
+{% end %}

@@ -1,0 +1,70 @@
+{% function block.content_sidebar() %}
+Currently selected filter : {%& filter %}
+<h3>Existing Filters</h3>
+{% render("tables/filters", {filters=filters, filter=filter}) %}
+
+<form action="/filters/{% if filter == 'all' then %}create{% else %}modify{% end %}"
+method="post"
+id="{% if filter == "all" then %}create-filter{% else %}modify-filter{% end %}"
+>
+  {% if filter == 'all' then %}
+  <fieldset>
+    <legend>Filter ID</legend>
+    <input name="new_filter" type="text" required />
+  </fieldset>
+  {% else %}
+  <fieldset>
+    <legend>Filter ID</legend>
+    <input name="existing_filter" type="text" readonly value = "{%& filter %}"/>
+  </fieldset>
+  {% end %}
+{% for key, values in pairs(form_data) do %}
+  <fieldset>
+    <legend>{%& key %}</legend>
+    <div class="cluster"><div>
+  {% for value, selected in pairs(values) do %}
+    <div>
+      <input type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
+      {% if selected then %}checked{% end %}/>
+      <label for="{{%& key %}[]">{%& value %}</label>
+    </div>
+  {% end %}
+    </div></div>
+  </fieldset>
+{% end %}
+
+<button 
+  {% if filter == "all" then %}
+    hx-post="/filters"
+    hx-include="#create-filter"
+  {% else %}
+    hx-put="/filters"
+    hx-include="#modify-filter"
+    hx-target="content"
+  {% end %}
+>
+{% if filter == "all" then %}Create{% else %}Modify{% end %}
+</button>
+</form>
+{% end %}
+
+{% function block.content_body() %}
+    <div id="ajax-body">
+    {% render("partial/tags", {filter = filter, 
+                               data = tags.data, 
+                               legend = filter .. " Tags"}) %}
+    <div id = "table-pdfs">
+    <fieldset>
+    <legend>Matching PDFs</legend>
+    {% render("partial/table", pdfs) %}
+    </fieldset>
+    </div>
+    </div>
+{% end %}
+
+{% function block.content_header() %}
+<h3>Summary of {%& filter %} filter</h3>
+There are {%& #tags.data %} tags across {%& pdfs.records %} documents found.
+{% end %}
+
+{% render('layouts/with_sidebar', {current_page="filters"}) %}

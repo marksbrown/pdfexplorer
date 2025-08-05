@@ -124,6 +124,10 @@ address a, nav {
 }
 
 
+.tags a + a {
+  margin-left: var(--s-3);
+}
+
 nav a + a {
   margin-left: var(--s-1);
 }
@@ -178,6 +182,10 @@ time {
   position: relative;
 }
 
+.selected {
+  background-color: var(--col6);
+}
+
 figure, .highlight {
   padding: var(--s-5) var(--s-1) var(--s-5) var(--s-1);
   border-radius: var(--s-3);
@@ -223,4 +231,13 @@ address > * > *{
   font-size: var(--fontsize-1);
   font-style: normal;
   text-decoration: none;
+}
+
+.eoq {
+  margin-top: var(--s0);
+  margin-bottom: var(--s0);
+}
+
+.current {
+  font-weight: bolder;
 }
