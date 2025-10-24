@@ -12,14 +12,15 @@
 <img class="page-img" src="data:image/png;base64, {%& image_base_64 %}">
 {% end %}
 
-<div id="{%& page_data.page %}" class="page"><div class="page-content">
-{% function block.page_content() %}
-      {% block.new_page(page_data.png) %}
-    {% end %}
-{% block.page_content() %}
-  </div>
-{% if show_meta then %}
-  <div class="box page-meta">
+{% function block.content_body() %}
+  <div id="{%& page_data.page %}" class="page"><div class="page-content">
+  {% block.new_page(page_data.png) %}
+  </div></div>
+{% end %}
+
+
+{% function block.content_sidebar() %}
+<div class="box page-meta">
   Page {%& page_data.page %} from <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}#{%& page_data.page %}">{%& page_data.id %}</a>
   {% local tags = vars.get_tags(page_data.id, page_data.page) %} 
   {% render("partial/tags", {filter = filter, 
@@ -29,3 +30,12 @@
                              legend = "Page " .. page_data.page .. " tags"}) %}
 </div>
 {% end %}
+
+{% function block.page() %}
+<div class="with-sidebar">
+  <div class="content_body">{% block.content_body() %}</div>
+  <div class="halfwidth">{% block.content_sidebar() %}</div>
+</div>
+{% end %}
+
+{% block.page() %}

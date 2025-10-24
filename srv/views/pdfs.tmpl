@@ -9,9 +9,8 @@
 </form>
 {% end %}
 
-
-{% function block.content_body() %}
+{% function block.content() %}
 {% render('partial/pages', {show_meta = show_meta, filter = filter, pages = pages}) %}
 {% end %}
 
-{% render('layouts/with_sidebar', {current_page="pdfs"}) %}
+{% render('layouts/base', {current_page="pdfs"}) %}

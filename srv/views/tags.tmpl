@@ -17,8 +17,8 @@
 
 {% end %}
 
-{% function block.content_body() %}
+{% function block.content() %}
 {% render('partial/pages', {show_meta = show_meta, pages = pages, filter = filter}) %}
 {% end %}
 
-{% render('layouts/with_sidebar', {current_page="tags"}) %}
+{% render('layouts/base', {current_page="tags"}) %}

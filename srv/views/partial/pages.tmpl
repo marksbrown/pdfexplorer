@@ -4,6 +4,6 @@
   {% if prev_page ~= nil then %}
     {% if current_page - prev_page ~= 1 then %}<hr class="eoq">{% end %}
   {% end %}
-  {% render('partial/page', {filter=filter, show_meta=show_meta, page_data = pages[i]}) %}
+  {% render('partial/page', {filter=filter, page_data = pages[i]}) %}
   {% prev_page = current_page %}
 {% end %}

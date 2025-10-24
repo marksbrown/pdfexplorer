@@ -2,6 +2,7 @@
                        pdfs = "/filters/" .. filter .. "/pdfs"}
                        %}
 
+{% if #data > 0 then %}
 <fieldset class="tags">
 <legend>{%& legend %}</legend>
 {% for i, row in ipairs(data) do %}
@@ -11,3 +12,4 @@
 {% end %}
 </div>
 </fieldset>
+{% end %}

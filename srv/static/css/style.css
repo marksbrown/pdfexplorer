@@ -62,6 +62,11 @@ img {
   max-width: 100%;
 }
 
+.page-img {
+  background-color: white;
+  max-width: var(--max-width);
+}
+
 .epigraph {
   padding-left: var(--s1);
   padding-right: var(--s1);
