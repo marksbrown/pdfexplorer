@@ -1,11 +1,6 @@
-{% function block.generate_link(key, value) %}
-{% if url ~= nil then %}
-{% if url[key] ~= nil then %}
-<a href="{%& vars.siteurl %}/{%& url[key] %}/{%& value %}">{%& value %}</a>
-{% else %}
-{%& value %}
-{% end %}
-{% end %}
+{% function block.generate_tag(t, f, tc) %}
+  {% local tc = tc or vars.count_tag(t, f) %}
+  <a class="tag  {% if tc == 0 then %}empty{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
 {% end %}
 
 {% function block.new_page(image_base_64) %}
@@ -20,21 +15,30 @@
 
 
 {% function block.content_sidebar() %}
-<div class="box page-meta">
-  Page {%& page_data.page %} from <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}#{%& page_data.page %}">{%& page_data.id %}</a>
-  {% local tags = vars.get_tags(page_data.id, page_data.page) %} 
-  {% render("partial/tags", {filter = filter, 
-                             data = tags, 
-                             url = {tags = "/filters/" .. filter .. "/tags",
-                                    pdfs = "/filters/" .. filter .. "/pdfs"}, 
-                             legend = "Page " .. page_data.page .. " tags"}) %}
+<div class="page-meta">
+  {% local tags = vars.get_tags(page_data.id, page_data.page) %}
+
+  {% if #tags > 0 then %}
+  <fieldset class="tags">
+  <legend>Page metadata</legend>
+  </legend>
+  <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}#{%& page_data.page %}">Page {%& page_data.page %}</a>
+  of <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}">{%& page_data.id %}</a>
+  <fieldset class="tags">
+  <legend>Tags</legend>
+  {% for i, row in ipairs(tags) do %}
+    {% block.generate_tag(row.tag, filter) %}
+  {% end %}
+  </fieldset>
+  </fieldset>
+  {% end %}
 </div>
 {% end %}
 
 {% function block.page() %}
 <div class="with-sidebar">
-  <div class="content_body">{% block.content_body() %}</div>
-  <div class="halfwidth">{% block.content_sidebar() %}</div>
+  <div class="box">{% block.content_body() %}</div>
+  <div class="box">{% block.content_sidebar() %}</div>
 </div>
 {% end %}
 

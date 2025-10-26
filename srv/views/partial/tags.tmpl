@@ -1,14 +1,13 @@
-{% local url = url or {tags = "/filters/" .. filter .. "/tags",
-                       pdfs = "/filters/" .. filter .. "/pdfs"}
-                       %}
+{% function block.generate_tag(t, f, tc) %}
+  {% local tc = tc or vars.count_tag(t, f) %}
+  <a class="tag  {% if tc == 0 then %}empty{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+{% end %}
 
 {% if #data > 0 then %}
 <fieldset class="tags">
 <legend>{%& legend %}</legend>
 {% for i, row in ipairs(data) do %}
-  {% local t = row.tag %}
-  {% if row.count ~= nil then %}{% t = t .."(" .. row.count .. ")" %}{% end %}
-  <a class="tag" href="{%& url.tags %}/{%& row.tag %}">{%& t %}</a>
+  {% block.generate_tag(row.tag, filter, row.count) %}
 {% end %}
 </div>
 </fieldset>

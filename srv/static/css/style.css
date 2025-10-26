@@ -58,13 +58,8 @@ footer {
   text-align: center;
 }
 
-img {
-  max-width: 100%;
-}
-
 .page-img {
   background-color: white;
-  max-width: var(--max-width);
 }
 
 .epigraph {
@@ -115,7 +110,16 @@ a {
   color: white;
   text-decoration-thickness: 0.05em;
   text-decoration-color: var(--col5);
-  text-decoration-style: double;
+  text-decoration-style: single;
+}
+
+.empty {
+  color: var(--col1);
+}
+
+fieldset {
+  max-width: var(--max-width);
+  border-color: var(--col1);
 }
 
 a:hover {
@@ -129,7 +133,7 @@ address a, nav {
 }
 
 
-.tags a + a {
+.tags a + a, .tag + .tag {
   margin-left: var(--s-3);
 }
 
@@ -147,10 +151,6 @@ nav a + a {
 
 h1 a{
   text-decoration: none;
-}
-
-content {
-  text-align: justify;
 }
 
 .active {
@@ -202,11 +202,6 @@ figure + figure {
   padding-top:0;
 }
 
-
-fieldset {
-  letter-spacing: var(--s-8);
-  border: 1px solid var(--col6);
-}
 
 table {
   border-collapse: collapse;

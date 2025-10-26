@@ -28,6 +28,7 @@ p{
 
 .box {
   padding: var(--s1);
+  max-width: var(--max-width);
 }
 
 .stack {
@@ -99,14 +100,14 @@ p{
 .with-sidebar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-1);
-}
-
-.with-sidebar > :first-child {
-  flex-grow: 1;
+  gap: var(--s-5);
 }
 
 .with-sidebar > :last-child {
+  flex-grow: 1;
+}
+
+.with-sidebar > :first-child {
   flex-basis: 0;
   flex-grow: 999;
   min-inline-size: 50%;
@@ -127,8 +128,4 @@ p{
 
 .doctest-block {
   overflow-x: scroll;
-}
-
-fieldset {
-  max-width: var(--max-width);
 }

@@ -1,24 +1,78 @@
-{% function block.content_header() %}
-  {% if other_filters ~= nil then %}
-  <ul>
-  {% for k, v in pairs(other_filters) do %}
-    <li {% if k == filter then %}class="current"{% end %}>
-    We have found {%& v %} pages with tag <a href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& tag %}</a>
-    in filter : <a href="/filters/{%& k %}">{%& k %}</a>
-    </li>
-  {% end %}
-  </ul>
-  {% end %}
+{% function block.generate_tag(t, f) %}
+{% local tc = vars.count_tag(t, f) %}
+{% if tc == 0 or tc == nil then %}
+<a class="tag empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
+{% else %}
+<a class="tag" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+{% end %}
+{% end %}
 
+{% function block.header() %}
+<h2>{%& tag %}</h2>
+<div class="cluster"><div>
+{% if other_filters ~= nil then %}
+<fieldset>
+<legend>{%& tag %} is found in filters</legend>
+{% for k, v in pairs(other_filters) do %}
+{% if v > 0 then %}
+<a class="tag {% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}({%& v %})</a>
+{% else %}
+<a class="tag empty {% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}</a>
+{% end %}
+{% end %}
+</fieldset>
+{% end %}
+
+{% if #aka > 0 then %}
+<fieldset class="tags">
+<legend>{%& tag %} is also known as</legend>
+{% for i, t in ipairs(aka) do %}
+  {% block.generate_tag(t, filter) %}
+{% end %}
+</fieldset>
+{% end %}
+
+{% if #related > 0 then %}
+<fieldset class="tags">
+<legend>{%& tag %} is related to</legend>
+{% for i, t in ipairs(related) do %}
+  {% block.generate_tag(t, filter) %}
+{% end %}
+</fieldset>
+{% end %}
+
+{% if #group_children > 0 then %}
+<fieldset class="tags"> 
+<legend>{%& tag %} has children</legend>
+{% for i, data in pairs(group_children) do %}
+  {% block.generate_tag(data.right, filter) %}
+{% end %}
+</fieldset>
+{% end %}
+
+{% if #group_parents > 0 then %}
+  {% for i, data in pairs(group_parents) do %}
+    <fieldset class="tags"> 
+      <legend>{%& tag %} is a member of {%& block.generate_tag(data.left, filter) %}</legend> 
+      {% for j, members in pairs(vars.get_group_children(data.left)) do %}
+        {% block.generate_tag(members.right, filter) %}
+      {% end %}
+    </fieldset>
+  {% end %}
+{% end %}
+</div>
+</div>
+{% if #pages > 0 then %}
 <form name="pages/update", method="get">
   <label>Limit:<input type="number" name="limit" value="{%& limit %}"/></label>
   <button value="update" type="submit">Update</button>
 </form>
+{% end %}
 
 {% end %}
 
 {% function block.content() %}
-{% render('partial/pages', {show_meta = show_meta, pages = pages, filter = filter}) %}
+{% render('partial/pages', {pages = pages, filter = filter}) %}
 {% end %}
 
 {% render('layouts/base', {current_page="tags"}) %}

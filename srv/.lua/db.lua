@@ -15,6 +15,68 @@ end
 
 dbm.db = dbm.load_db()
 
+dbm.get_all_groups = function()
+  local cmd = [[
+  select left, count(*) as count
+  from tagedges
+  where kind = "group"
+  group by left
+  order by count
+  desc;
+  ]]
+  return dbm.db:fetchAll(cmd)
+end
+
+dbm.get_matching_left = function(tag, kind)
+  local cmd = [[
+  select right
+  from tagedges
+  where kind = (?)
+  and left = (?);
+  ]]
+  return dbm.db:fetchAll(cmd, kind, tag)
+end
+
+dbm.get_group_children = function(tag)
+  return dbm.get_matching_left(tag, 'group')
+end
+
+dbm.get_matching_right = function(tag, kind)
+  local cmd = [[
+  select left
+  from tagedges
+  where kind = (?)
+  and right = (?);
+  ]]
+  return dbm.db:fetchAll(cmd, kind, tag)
+end
+
+dbm.get_group_parents = function(tag)
+  return dbm.get_matching_right(tag, "group")
+end
+
+dbm.get_matching_both = function(tag, kind)
+  local l = dbm.get_matching_left(tag, kind)
+  local r = dbm.get_matching_right(tag, kind)
+  local parsed = {}
+  for i, v in pairs(l) do
+    parsed[#parsed + 1] = v.right
+  end
+  for i, v in pairs(r) do
+    parsed[#parsed + 1] = v.left
+  end
+  return parsed
+end
+
+dbm.get_related = function(tag)
+  return dbm.get_matching_both(tag, "related")
+end
+
+dbm.get_aka = function(tag)
+  return dbm.get_matching_both(tag, "aka")
+end
+
+-- Filters
 dbm.get_all_filters = function()
   local cmd = [[
   SELECT substr(name, 9) as name
@@ -57,6 +119,30 @@ dbm.count_filters = function()
   return dbm.db:fetchOne(cmd).count
 end
 
+dbm.count_tag = function(tag, filter)
+  local cmd = [[]]
+  if filter == "all" then
+    cmd = [[
+    select count
+    from tags
+    where tag = (?);
+    ]]
+    return dbm.db:fetchOne(cmd, tag).count
+  else
+    assert(dbm.validate_filter(filter))
+    local cmd = [[
+    select count(tag) as count
+    FROM 
+    pagetags
+    JOIN
+    myviews_]] .. filter .. [[ as mv
+    ON mv.id == pagetags.id
+    WHERE tag = (?);
+    ]]
+  return dbm.db:fetchOne(cmd, tag).count
+  end
+end
+
 dbm.count_tags = function(filter)
   local cmd = [[]]
   if filter == "all" then
@@ -66,6 +152,7 @@ dbm.count_tags = function(filter)
     ]]
     return dbm.db:fetchOne(cmd).count
   else
+    print(filter)
     assert(dbm.validate_filter(filter))
     local cmd = [[
     select count(distinct tag) as count
@@ -84,9 +171,7 @@ dbm.count_tags_by_filter = function(tag)
   local results = {}
   for i, filter in ipairs(all_filters) do
     local c = dbm.count_images_by_tag(tag, filter.name)
-    if c > 0 then
-      results[filter.name] = c
-    end
+    results[filter.name] = c
   end
   results['all'] = dbm.count_images_by_tag(tag, 'all')
   return results  
@@ -314,9 +399,9 @@ end
 dbm.get_tag_count = function(tag)
   local d = dbm.db:fetchAll([[SELECT count from tags WHERE tag = (?);]], tag)
   if #d == 0 then
-    return 0
+   return 0
   else
-    return d[1].count
+   return d[1].count
   end
 end
 

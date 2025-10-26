@@ -222,8 +222,11 @@ local tags_handler = function(template)
     end
     return fm.serveContent(template, {tag_count = total_pages,
                                     tag = r.params.tag,
+                                    group_children = dbm.get_group_children(r.params.tag),
+                                    group_parents = dbm.get_group_parents(r.params.tag),
+                                    related = dbm.get_related(r.params.tag),
+                                    aka = dbm.get_aka(r.params.tag),
                                     other_filters = other_filters,
-                                    show_meta = true,
                                     url = {tag = "filters/" .. filter .. "/tags"},
                                     limit = limit,
                                     offset = offset,
@@ -259,7 +262,6 @@ local pdf_page_handler = function(template)
 
   return fm.serveContent(template, {fullpath = fullpath,
                                   tags_found = tags_found,
-                                  show_meta = true,
                                   url = {pdf = "filters/" .. filter .. "/pdfs"},
                                   filter = filter,
                                   pdf = pdf,
