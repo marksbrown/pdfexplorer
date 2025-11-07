@@ -92,6 +92,21 @@ end)
 fm.setRoute(fm.GET"/table/filters/json", function(r)
   return fm.serveContent("json", filter_table())
 end)
+--===== /meta =====-
+--
+local meta_handler = function(template)
+  return function(r)
+    filter = r.params.filter
+    assert(dbm.validate_filter(filter))
+    unique_meta_found = dbm.get_metadata_keys(filter)  
+    return fm.serveContent(template, {filter = filter})
+  end
+end
+
+fm.setRoute(fm.GET"/m", fm.serveRedirect("/m/all"))
+fm.setRoute(fm.GET"/meta", fm.serveRedirect("/meta/all"))
+fm.setRoute({'/m/:filter', '/meta/:filter', method="GET"}, meta_handler("meta"))
+fm.setRoute({'/m/:filter/json', '/meta/:filter/json', method="GET"}, meta_handler("json"))
 
 --===== /filters/* =====--
 local view_filters_handler = function(template)
@@ -222,8 +237,6 @@ local tags_handler = function(template)
     end
     return fm.serveContent(template, {tag_count = total_pages,
                                     tag = r.params.tag,
-                                    group_children = dbm.get_group_children(r.params.tag),
-                                    group_parents = dbm.get_group_parents(r.params.tag),
                                     related = dbm.get_related(r.params.tag),
                                     aka = dbm.get_aka(r.params.tag),
                                     other_filters = other_filters,
@@ -246,6 +259,10 @@ local pdf_page_handler = function(template)
   local s = uti.load_settings()
   local pdf = r.params.pdf .. '.pdf'
   local fullpath = r.params.path .. '/' .. pdf
+  local pdfmeta = dbm.get_pdf_metadata(fullpath)
+  for i, key in pairs(pdfmeta) do
+    print(key)
+  end
   local low = r.params.low or 1
   local high = r.params.high or s.max_pages
   local filter = r.params.filter or 'all'
@@ -259,10 +276,10 @@ local pdf_page_handler = function(template)
     high = #pages + tonumber(low)
   end
   tags_found = dbm.get_all_tags(fullpath, low, high)
-
   return fm.serveContent(template, {fullpath = fullpath,
                                   tags_found = tags_found,
                                   url = {pdf = "filters/" .. filter .. "/pdfs"},
+                                  pdf_meta = pdfmeta,
                                   filter = filter,
                                   pdf = pdf,
                                   low = low,

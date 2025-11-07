@@ -1,4 +1,5 @@
 {% function block.content_sidebar() %}
+<div class="box">
 Currently selected filter : {%& filter %}
 <h3>Existing Filters</h3>
 {% render("tables/filters", {filters=filters, filter=filter}) %}
@@ -46,9 +47,11 @@ id="{% if filter == "all" then %}create-filter{% else %}modify-filter{% end %}"
 {% if filter == "all" then %}Create{% else %}Modify{% end %}
 </button>
 </form>
+</div>
 {% end %}
 
 {% function block.content_body() %}
+<div class="box">
     <div id="ajax-body">
     {% render("partial/tags", {filter = filter, 
                                data = tags.data, 
@@ -60,6 +63,7 @@ id="{% if filter == "all" then %}create-filter{% else %}modify-filter{% end %}"
     </fieldset>
     </div>
     </div>
+</div>
 {% end %}
 
 {% function block.content_header() %}

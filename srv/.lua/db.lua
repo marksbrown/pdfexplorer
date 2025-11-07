@@ -37,9 +37,6 @@ dbm.get_matching_left = function(tag, kind)
   return dbm.db:fetchAll(cmd, kind, tag)
 end
 
-dbm.get_group_children = function(tag)
-  return dbm.get_matching_left(tag, 'group')
-end
 
 dbm.get_matching_right = function(tag, kind)
   local cmd = [[
@@ -51,8 +48,20 @@ dbm.get_matching_right = function(tag, kind)
   return dbm.db:fetchAll(cmd, kind, tag)
 end
 
+dbm.get_group_children = function(tag)
+  parsed = {}
+  for i, row in pairs(dbm.get_matching_left(tag, 'group')) do 
+    parsed[#parsed + 1] = row.right
+  end
+  return parsed
+end
+
 dbm.get_group_parents = function(tag)
-  return dbm.get_matching_right(tag, "group")
+  parsed = {}
+  for i, row in pairs(dbm.get_matching_right(tag, 'group')) do 
+    parsed[#parsed + 1] = row.left
+  end
+  return parsed
 end
 
 dbm.get_matching_both = function(tag, kind)
@@ -76,6 +85,14 @@ dbm.get_aka = function(tag)
   return dbm.get_matching_both(tag, "aka")
 end
 
+dbm.get_pdf_metadata = function(pdf)
+  cmd = [[
+  select json(metadata) as metadata
+  from pdfs
+  where id = (?);
+  ]]
+  return DecodeJson(dbm.db:fetchOne(cmd, pdf).metadata)
+end
 -- Filters
 dbm.get_all_filters = function()
   local cmd = [[
@@ -87,11 +104,12 @@ dbm.get_all_filters = function()
   return dbm.db:fetchAll(cmd)
 end
 
+local all_filters = dbm.get_all_filters()
+
 dbm.validate_filter = function(filter)
   if filter == "all" then
     return true
   end
-  local all_filters = dbm.get_all_filters()
   for k, v in pairs(all_filters) do 
     if v.name == filter then
       return true
@@ -101,12 +119,9 @@ dbm.validate_filter = function(filter)
 end
 
 dbm.delete_filter = function(filter)
-  if dbm.validate_filter(filter) then
-    local cmd = [[DROP view myviews_]] .. filter
-    dbm.db:execute(cmd)
-  else
-    error(filter .. "not found")
-  end
+  assert(dbm.validate_filter(filter))
+  local cmd = [[DROP view myviews_]] .. filter
+  dbm.db:execute(cmd)
 end
 
 dbm.count_filters = function()
@@ -152,7 +167,6 @@ dbm.count_tags = function(filter)
     ]]
     return dbm.db:fetchOne(cmd).count
   else
-    print(filter)
     assert(dbm.validate_filter(filter))
     local cmd = [[
     select count(distinct tag) as count
@@ -167,7 +181,6 @@ dbm.count_tags = function(filter)
 end
 
 dbm.count_tags_by_filter = function(tag)
-  local all_filters = dbm.get_all_filters()
   local results = {}
   for i, filter in ipairs(all_filters) do
     local c = dbm.count_images_by_tag(tag, filter.name)
@@ -194,6 +207,7 @@ dbm.get_pdfs_by_filter = function(filter)
   if filter == nil or filter == "all" then
     return dbm.get_all_pdfs()
   end
+  assert(dbm.validate_filter(filter))
   local cmd = [[
   SELECT id, metadata
   FROM myviews_]] .. filter .. [[
@@ -451,6 +465,7 @@ dbm.count_images_by_tag = function(tag, filter)
   where pagetags.tag = (?));
   ]]
   else
+    assert(dbm.validate_filter(filter))
     cmd = [[ 
   SELECT count(*) as c from (select pages.id, pages.page, png from pages
   join pagetags
@@ -477,6 +492,7 @@ dbm.load_images_by_tag = function(tag, filter, limit, offset)
   limit (?), (?);
   ]]
   else
+    assert(dbm.validate_filter(filter))
     cmd = [[ 
   SELECT * from (select pages.id, pages.page, png from pages
   join pagetags
@@ -530,6 +546,7 @@ dbm.get_tags_by_filter = function(filter, pdf)
   if filter == nil or filter == "all" then
     return dbm.get_all_tags(pdf)
   end
+  assert(dbm.validate_filter(filter))
   if pdf ~= nil then
     local cmd = [[
   SELECT tag, COUNT(*) as count

@@ -1,0 +1,51 @@
+{% function block.generate_tag(tag_, filter_) %}
+{% local tc = vars.count_tag(tag_, filter_) %}
+{% if tc == 0 or tc == nil then %}
+<a class="tag empty" href="{%& vars.siteurl %}/filters/{%& filter_ %}/tags/{%& t %}">{%& tag_ %}</a>
+{% else %}
+<a class="tag" href="{%& vars.siteurl %}/filters/{%& filter_ %}/tags/{%& t %}">{%& tag_ %}({%& tc %})</a>
+{% end %}
+{% end %}
+{% local parents = vars.get_group_parents(tag) %}
+<div class="">
+<div class="left-tag-right">
+{% if #parents > 0 then %}
+<fieldset>
+<legend>Parents</legend>
+<ul>
+{% for i, parent in ipairs(parents) do %}
+  <li>{% block.generate_tag(parent, filter) %}</li>
+  {% local grand_parents = vars.get_group_parents(parent) %}
+  {% if #grand_parents > 0 then %}
+  <ul>
+  {% for i, grand_parent in ipairs(grand_parents) do %}
+    <li>{% block.generate_tag(grand_parent, filter) %}</li>
+  {% end %}
+  </ul>
+  {% end %}
+{% end %}
+</ul>
+</fieldset>
+{% end %}
+<h3>{%& tag %}</h3>
+{% local children = vars.get_group_children(tag) %}
+{% if #children > 0 then %}
+<fieldset>
+<legend>Children</legend>
+<ul>
+{% for i, child in ipairs(children) do %}
+  <li>{% block.generate_tag(child, filter) %}</li>
+  {% local grand_children = vars.get_group_children(child) %}
+  {% if #grand_children > 0 then %}
+  <ul>
+  {% for i, grand_child in ipairs(grand_children) do %}
+    <li>{% block.generate_tag(grand_child, filter) %}</li>
+  {% end %}
+  </ul>
+  {% end %}
+{% end %}
+</ul>
+</fieldset>
+{% end %}
+</div>
+</div>

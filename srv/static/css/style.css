@@ -118,7 +118,6 @@ a {
 }
 
 fieldset {
-  max-width: var(--max-width);
   border-color: var(--col1);
 }
 
@@ -132,6 +131,13 @@ address a, nav {
   font-size: var(--fontsize0);
 }
 
+.tag {
+  word-break: keep-all;
+}
+
+.tags {
+  line-height: 3em;
+}
 
 .tags a + a, .tag + .tag {
   margin-left: var(--s-3);
@@ -173,6 +179,9 @@ position: relative; padding-bottom: 75%; height: 0; overflow: hidden;
 #pagination > a, .tag {
   border-radius: var(--s-1);
   font-style: italic;
+  background-color: var(--col7);
+  padding: var(--s-2);
+  text-decoration: none;
 }
 
 #pagination > a + a {
@@ -240,4 +249,22 @@ address > * > *{
 
 .current {
   font-weight: bolder;
+}
+
+.left-tag-right {
+  align-items: center;
+}
+
+.left-tag-right:first-child > *, .left-tag-right:last-child > * {
+  line-height: 3em;
+}
+
+.left-tag-right:first-child ul, .left-tag-right:last-child ul {
+  list-style-type: none;
+}
+
+fieldset > ul {
+  column-count: 2;
+  overflow-x: scroll;
+  max-height: 50vh;
 }

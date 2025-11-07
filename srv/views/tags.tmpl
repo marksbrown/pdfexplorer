@@ -8,8 +8,8 @@
 {% end %}
 
 {% function block.header() %}
-<h2>{%& tag %}</h2>
 <div class="cluster"><div>
+{% render('partial/group', {tag = tag, filter=filter}) %}
 {% if other_filters ~= nil then %}
 <fieldset>
 <legend>{%& tag %} is found in filters</legend>
@@ -24,7 +24,7 @@
 {% end %}
 
 {% if #aka > 0 then %}
-<fieldset class="tags">
+<fieldset class="box">
 <legend>{%& tag %} is also known as</legend>
 {% for i, t in ipairs(aka) do %}
   {% block.generate_tag(t, filter) %}
@@ -33,32 +33,12 @@
 {% end %}
 
 {% if #related > 0 then %}
-<fieldset class="tags">
+<fieldset class="box">
 <legend>{%& tag %} is related to</legend>
 {% for i, t in ipairs(related) do %}
   {% block.generate_tag(t, filter) %}
 {% end %}
 </fieldset>
-{% end %}
-
-{% if #group_children > 0 then %}
-<fieldset class="tags"> 
-<legend>{%& tag %} has children</legend>
-{% for i, data in pairs(group_children) do %}
-  {% block.generate_tag(data.right, filter) %}
-{% end %}
-</fieldset>
-{% end %}
-
-{% if #group_parents > 0 then %}
-  {% for i, data in pairs(group_parents) do %}
-    <fieldset class="tags"> 
-      <legend>{%& tag %} is a member of {%& block.generate_tag(data.left, filter) %}</legend> 
-      {% for j, members in pairs(vars.get_group_children(data.left)) do %}
-        {% block.generate_tag(members.right, filter) %}
-      {% end %}
-    </fieldset>
-  {% end %}
 {% end %}
 </div>
 </div>
@@ -69,6 +49,10 @@
 </form>
 {% end %}
 
+{% if #pages > 0 then %}'{%& tag %}' has {%& #pages %} page{% if #pages > 1 then %}s{% end %} associated.
+{% else %}
+No pages found associated with '{%& tag %}' in {%& filter %}.
+{% end %}
 {% end %}
 
 {% function block.content() %}

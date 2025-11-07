@@ -8,17 +8,16 @@
 {% end %}
 
 {% function block.content_body() %}
-  <div id="{%& page_data.page %}" class="page"><div class="page-content">
+  <div id="{%& page_data.page %}" class="box page">
   {% block.new_page(page_data.png) %}
-  </div></div>
+  </div>
 {% end %}
 
 
 {% function block.content_sidebar() %}
-<div class="page-meta">
-  {% local tags = vars.get_tags(page_data.id, page_data.page) %}
-
-  {% if #tags > 0 then %}
+{% local tags = vars.get_tags(page_data.id, page_data.page) %}
+<div class="box page-meta">
+{% if #tags > 0 then %}
   <fieldset class="tags">
   <legend>Page metadata</legend>
   </legend>
@@ -29,16 +28,18 @@
   {% for i, row in ipairs(tags) do %}
     {% block.generate_tag(row.tag, filter) %}
   {% end %}
+  <button>Alter Tags</button>
   </fieldset>
+  <button>Alter Page Metadata</button>
   </fieldset>
-  {% end %}
+{% end %}
 </div>
 {% end %}
 
 {% function block.page() %}
 <div class="with-sidebar">
-  <div class="box">{% block.content_body() %}</div>
-  <div class="box">{% block.content_sidebar() %}</div>
+  {% block.content_body() %}
+  {% block.content_sidebar() %}
 </div>
 {% end %}
 

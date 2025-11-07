@@ -1,5 +1,5 @@
 {
-  "max_pages" : 20,
+  "max_pages" : -1,
   "siteurl" : "",
   "database" : {"name" : "compsci.db", "loc" : "."}
 }
