@@ -119,6 +119,7 @@ a {
 
 fieldset {
   border-color: var(--col1);
+  line-height: 3em;
 }
 
 a:hover {
@@ -251,17 +252,7 @@ address > * > *{
   font-weight: bolder;
 }
 
-.left-tag-right {
-  align-items: center;
-}
 
-.left-tag-right:first-child > *, .left-tag-right:last-child > * {
-  line-height: 3em;
-}
-
-.left-tag-right:first-child ul, .left-tag-right:last-child ul {
-  list-style-type: none;
-}
 
 fieldset > ul {
   column-count: 2;

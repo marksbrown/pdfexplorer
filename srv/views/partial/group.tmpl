@@ -7,8 +7,6 @@
 {% end %}
 {% end %}
 {% local parents = vars.get_group_parents(tag) %}
-<div class="">
-<div class="left-tag-right">
 {% if #parents > 0 then %}
 <fieldset>
 <legend>Parents</legend>
@@ -27,7 +25,6 @@
 </ul>
 </fieldset>
 {% end %}
-<h3>{%& tag %}</h3>
 {% local children = vars.get_group_children(tag) %}
 {% if #children > 0 then %}
 <fieldset>
@@ -47,5 +44,3 @@
 </ul>
 </fieldset>
 {% end %}
-</div>
-</div>

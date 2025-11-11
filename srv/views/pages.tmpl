@@ -1,0 +1,24 @@
+{% local offset = tonumber(offset) %}
+{% local limit = tonumber(limit) %}
+
+{% if #pages > 0 then %}
+  {% render('partial/pages', {tag = tag, 
+                              pages = pages, filter = filter,
+                              offset = offset, total_pages = total_pages}) %}
+{% end %}
+{% if #pages + offset < total_pages then %}
+<noscript>
+<fieldset>
+<legend>Pages after these</legend>
+<a href="{%& url %}?offset={%& offset + limit %}">View Next</a>
+</fieldset>
+</noscript>
+
+<!-- htmx infinite scroll (needs JS) -->
+<div class="onlyjs"
+  hx-get="{%& url %}/pages?offset={%& offset + limit %}"
+  hx-trigger="revealed"
+  hx-swap="outerHTML">
+<p>There are {%& total_pages - #pages - offset %} pages not yet seen</p>
+</div>
+{% end %}

@@ -134,6 +134,16 @@ dbm.count_filters = function()
   return dbm.db:fetchOne(cmd).count
 end
 
+dbm.count_pages_in_pdf = function(fullpath)
+  cmd = [[
+  select count(*) as count
+  from pages
+  where id = (?) 
+  ]]
+  return dbm.db:fetchOne(cmd, fullpath).count
+end
+
+
 dbm.count_tag = function(tag, filter)
   local cmd = [[]]
   if filter == "all" then
@@ -431,15 +441,15 @@ return dbm.db:fetchAll(cmd, pdf)
 end
 
 
-dbm.load_images_by_pdf = function(pdf, max_pages)
+dbm.load_images_by_pdf = function(pdf, limit, offset)
   local cmd = [[
   select * from
   (select pages.id, page, png from pages
   where pages.id = (?) 
   order by pages.page)
-  limit (?);
+  limit (?), (?);
   ]]
-return dbm.db:fetchAll(cmd, pdf, max_pages)
+return dbm.db:fetchAll(cmd, pdf, offset, limit)
 end
 
 dbm.load_images_by_page_range = function(pdf, low, high)

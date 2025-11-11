@@ -1,6 +1,10 @@
 {% function block.generate_tag(t, f, tc) %}
-  {% local tc = tc or vars.count_tag(t, f) %}
-  <a class="tag  {% if tc == 0 then %}empty{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+{% local tc = tc or vars.count_tag(t, f) %}
+{% if tc == 0 or tc == nil then %}
+<a class="tag {% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
+{% else %}
+<a class="tag {% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+{% end %}
 {% end %}
 
 {% function block.new_page(image_base_64) %}
@@ -8,7 +12,7 @@
 {% end %}
 
 {% function block.content_body() %}
-  <div id="{%& page_data.page %}" class="box page">
+  <div class="box page">
   {% block.new_page(page_data.png) %}
   </div>
 {% end %}
@@ -19,18 +23,15 @@
 <div class="box page-meta">
 {% if #tags > 0 then %}
   <fieldset class="tags">
-  <legend>Page metadata</legend>
-  </legend>
-  <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}#{%& page_data.page %}">Page {%& page_data.page %}</a>
-  of <a href="/filters/{%& filter %}/pdfs/{%& page_data.id %}">{%& page_data.id %}</a>
+  <legend>Page {%& page_data.page %} metadata</legend>
+  <a href="/pdfs/{%& page_data.id %}?page={%& page_data.page %}#{%& page_data.page %}">Page {%& page_data.page %}</a>
+  of <a href="/pdfs/{%& page_data.id %}">{%& page_data.id %}</a>
   <fieldset class="tags">
   <legend>Tags</legend>
   {% for i, row in ipairs(tags) do %}
-    {% block.generate_tag(row.tag, filter) %}
+    {% block.generate_tag(row.tag, filter, vars.count_tag(row.tag, filter)) %}
   {% end %}
-  <button>Alter Tags</button>
   </fieldset>
-  <button>Alter Page Metadata</button>
   </fieldset>
 {% end %}
 </div>

@@ -1,13 +1,13 @@
 {% function block.header() %}
-<h2>Document</h2>
-<h3 class="subtitle">{%& pdf %}</h3>
+<h2>{%& pdf %}</h2>
+<h3 class="subtitle">{%& fullpath %}</h3>
 {% render("partial/tags", {filter = filter, data = tags_found, legend = "Tags Found"}) %}
 {% if pdf_meta ~= nil then %}
 <fieldset class="box cluster">
 <legend>Document Metadata</legend>
 <dl>
 <dt>Pages</dt>
-<dd>{%& #pages %}</dd>
+<dd>{%& total_pages %}</dd>
 {% for key, values in pairs(pdf_meta) do %}
 <dt>| {%& key %}</dt> 
 <dd>{%& values %}</dd>
@@ -15,16 +15,22 @@
 </dl>
 </fieldset>
 {% end %}
-
-<form name="pages/update", method="get">
-  <label>From:<input type="number" name="low" value="{%& low %}"/></label>
-  <label>To:<input type="number" name="high" value="{%& high %}"/></label>
-  <button value="update" type="submit">Update</button>
-</form>
 {% end %}
 
 {% function block.content() %}
-{% render('partial/pages', {filter = filter, pages = pages}) %}
+{% if offset > 0 then %}
+{% local prev = offset - limit %}
+{% if prev < 0 then %}
+{% prev = 0 %}
+{% end %}
+<fieldset>
+<legend>Pages before these</legend>
+<a href="{%& url %}?offset={%& prev %}">View Previous</a>
+</fieldset>
+{% end %}
+{% render('pages', {url = url, current_page = "pdfs", pdf = pdf, 
+                    pages = pages, filter = filter, limit = limit, 
+                    offset = offset, total_pages = total_pages}) %}
 {% end %}
 
 {% render('layouts/base', {current_page="pdfs"}) %}

@@ -225,7 +225,7 @@ fm.setRoute({"/f/:filter/delete", "/filters/:filter/delete", method="GET"}, filt
 local tags_handler = function(template)
     return function(r)
     local s = uti.load_settings()
-    local limit = r.params.limit or s.max_pages
+    local limit = s.pagination
     local offset = r.params.offset or 0
     local filter = r.params.filter or 'all'
     assert(dbm.validate_filter(filter))
@@ -235,12 +235,15 @@ local tags_handler = function(template)
     if tonumber(limit) > #pages then
       limit = #pages
     end
-    return fm.serveContent(template, {tag_count = total_pages,
+    if tonumber(offset) < 0 then
+      offset = 0
+    end
+    return fm.serveContent(template, {total_pages = total_pages,
                                     tag = r.params.tag,
                                     related = dbm.get_related(r.params.tag),
                                     aka = dbm.get_aka(r.params.tag),
                                     other_filters = other_filters,
-                                    url = {tag = "filters/" .. filter .. "/tags"},
+                                    url = "/filters/" .. filter .. "/tags/" .. r.params.tag,
                                     limit = limit,
                                     offset = offset,
                                     filter = filter,
@@ -250,6 +253,7 @@ local tags_handler = function(template)
                                 end
 fm.setRoute({"/f/:filter/t/:tag", "/filters/:filter/tags/:tag"}, tags_handler("tags"))
 fm.setRoute({"/f/:filter/t/:tag/json", "/filters/:filter/tags/:tag/json"}, tags_handler("json"))
+fm.setRoute({"/f/:filter/t/:tag/pages", "/filters/:filter/tags/:tag/pages"}, tags_handler("pages"))
 
 -- /pdfs
 --
@@ -260,30 +264,28 @@ local pdf_page_handler = function(template)
   local pdf = r.params.pdf .. '.pdf'
   local fullpath = r.params.path .. '/' .. pdf
   local pdfmeta = dbm.get_pdf_metadata(fullpath)
-  for i, key in pairs(pdfmeta) do
-    print(key)
-  end
-  local low = r.params.low or 1
-  local high = r.params.high or s.max_pages
   local filter = r.params.filter or 'all'
-  if r.params.low ~= nil or r.params.high ~= nil then
-      pages = dbm.load_images_by_page_range(fullpath, low, high)
-  else
-      pages = dbm.load_images_by_pdf(fullpath,
-                                       r.params.limit or s.max_pages)
+  local limit = s.pagination
+  local offset = 0
+  if r.params.page ~= nil then
+    offset = tonumber(r.params.page) - limit
+  elseif r.params.offset ~= nil then
+    offset = tonumber(r.params.offset)
   end
-  if #pages < tonumber(high) - tonumber(low) then
-    high = #pages + tonumber(low)
+  if offset < 0 then
+    offset = 0
   end
-  tags_found = dbm.get_all_tags(fullpath, low, high)
+  local pages = dbm.load_images_by_pdf(fullpath, limit, offset)
+  local tags_found = dbm.get_all_tags(fullpath, offset, offset + limit)
   return fm.serveContent(template, {fullpath = fullpath,
                                   tags_found = tags_found,
-                                  url = {pdf = "filters/" .. filter .. "/pdfs"},
+                                  url = "/pdfs/" .. fullpath,
                                   pdf_meta = pdfmeta,
                                   filter = filter,
                                   pdf = pdf,
-                                  low = low,
-                                  high = high,
+                                  limit = limit,
+                                  offset = offset,
+                                  total_pages = dbm.count_pages_in_pdf(fullpath),
                                   pages = pages})
   end
 end
@@ -291,15 +293,13 @@ end
 
 fm.setRoute("/p/*", "/f/all/p/*")
 fm.setRoute({"/f/:filter/p/*path/:pdf.pdf", "/filters/:filter/pdfs/*path/:pdf.pdf"}, pdf_page_handler('pdfs'))
-fm.setRoute({"/f/:filter/p/*path/:pdf/json", "/filters/:filter/pdfs/*path/:pdf/json"}, pdf_page_handler('json'))
+fm.setRoute({"/f/:filter/p/*path/:pdf.pdf/json", "/filters/:filter/pdfs/*path/:pdf.pdf/json"}, pdf_page_handler('json'))
+fm.setRoute({"/f/:filter/p/*path/:pdf.pdf/pages", "/filters/:filter/pdfs/*path/:pdf.pdf/pages"}, pdf_page_handler('pages'))
 
 fm.setRoute({"/p/*path/:pdf.pdf", "/pdfs/*path/:pdf.pdf"}, pdf_page_handler('pdfs'))
 fm.setRoute({"/p/*path/:pdf.pdf/json", "/pdfs/*path/:pdf.pdf/json"}, pdf_page_handler('json'))
+fm.setRoute({"/p/*path/:pdf.pdf/pages", "/pdfs/*path/:pdf.pdf/pages"}, pdf_page_handler('pages'))
 
-fm.setRoute({"/p/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])",
-             "/pdfs/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])"}, pdf_page_handler('pdfs'))
-fm.setRoute({"/p/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])/json",
-             "/pdfs/*path/:pdf.pdf/pages/(:low[%d])-(:high[%d])/json"}, pdf_page_handler('json'))
 -- /settings
 --
 

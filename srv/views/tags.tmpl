@@ -1,13 +1,15 @@
-{% function block.generate_tag(t, f) %}
-{% local tc = vars.count_tag(t, f) %}
+{% function block.generate_tag(t, f, tc) %}
+{% local tc = tc or vars.count_tag(t, f) %}
 {% if tc == 0 or tc == nil then %}
-<a class="tag empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
+<a class="tag {% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
 {% else %}
-<a class="tag" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+<a class="tag {% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
 {% end %}
 {% end %}
 
 {% function block.header() %}
+<h1>{%& tag %}</div>({%& total_pages %})</h1>
+
 <div class="cluster"><div>
 {% render('partial/group', {tag = tag, filter=filter}) %}
 {% if other_filters ~= nil then %}
@@ -42,21 +44,16 @@
 {% end %}
 </div>
 </div>
-{% if #pages > 0 then %}
-<form name="pages/update", method="get">
-  <label>Limit:<input type="number" name="limit" value="{%& limit %}"/></label>
-  <button value="update" type="submit">Update</button>
-</form>
-{% end %}
 
-{% if #pages > 0 then %}'{%& tag %}' has {%& #pages %} page{% if #pages > 1 then %}s{% end %} associated.
-{% else %}
-No pages found associated with '{%& tag %}' in {%& filter %}.
-{% end %}
 {% end %}
 
 {% function block.content() %}
-{% render('partial/pages', {pages = pages, filter = filter}) %}
+{% if #pages > 0 then %}
+{% render('pages', {url = url, tag = tag, pages = pages, filter = filter, 
+                    offset = offset, total_pages = total_pages, limit = limit}) %}
+{% else %}
+No pages found associated with '{%& tag %}' in {%& filter %}.
+{% end %}
 {% end %}
 
 {% render('layouts/base', {current_page="tags"}) %}

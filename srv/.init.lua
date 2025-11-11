@@ -8,10 +8,9 @@ require "api"
 --Config
 local links = {home = "/",
                filters = '/filters',
-               meta = '/meta',
                settings = '/settings'}
 
-local rolecall = {'home', 'filters', 'meta', 'settings'}
+local rolecall = {'home', 'filters', 'settings'}
 
 
 --Variables available to templates
