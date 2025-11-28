@@ -1,9 +1,10 @@
 {% function block.header() %}
-<h2>{%& pdf %}</h2>
-<h3 class="subtitle">{%& fullpath %}</h3>
+<fieldset>
+<legend><h2>Document : <a href="{%& url %}">{%& fullpath %}</a></h2></legend>
+<div class="stack">
 {% render("partial/tags", {filter = filter, data = tags_found, legend = "Tags Found"}) %}
 {% if pdf_meta ~= nil then %}
-<fieldset class="box cluster">
+<fieldset class="cluster">
 <legend>Document Metadata</legend>
 <dl>
 <dt>Pages</dt>
@@ -15,6 +16,8 @@
 </dl>
 </fieldset>
 {% end %}
+</div>
+</fieldset>
 {% end %}
 
 {% function block.content() %}

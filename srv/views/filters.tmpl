@@ -1,74 +1,61 @@
-{% function block.content_sidebar() %}
-<div class="box">
-Currently selected filter : {%& filter %}
-<h3>Existing Filters</h3>
-{% render("tables/filters", {filters=filters, filter=filter}) %}
-
-<form action="/filters/{% if filter == 'all' then %}create{% else %}modify{% end %}"
-method="post"
-id="{% if filter == "all" then %}create-filter{% else %}modify-filter{% end %}"
->
-  {% if filter == 'all' then %}
-  <fieldset>
-    <legend>Filter ID</legend>
-    <input name="new_filter" type="text" required />
-  </fieldset>
-  {% else %}
-  <fieldset>
-    <legend>Filter ID</legend>
-    <input name="existing_filter" type="text" readonly value = "{%& filter %}"/>
-  </fieldset>
-  {% end %}
-{% for key, values in pairs(form_data) do %}
-  <fieldset>
-    <legend>{%& key %}</legend>
-    <div class="cluster"><div>
-  {% for value, selected in pairs(values) do %}
-    <div>
-      <input type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
-      {% if selected then %}checked{% end %}/>
-      <label for="{{%& key %}[]">{%& value %}</label>
-    </div>
-  {% end %}
-    </div></div>
-  </fieldset>
+{% function block.header() %}
+<fieldset>
+<legend>Filter Available</legend>
+<table id="table_filters">
+<tr {% if filter == "all" then %}class="selected"{% end %}>
+    <td><a href="{%& vars.siteurl %}/filters/all/view">View All</a></td>
+</tr>
+{% local d = data or filters.data %}
+{% for rowid, row in pairs(d) do %}
+<tr {% if filter == row.name then %}class="selected" hx-redirect="/filters/all/view"{% end %}>
+    <td><a href="{%& vars.siteurl %}/filters/{%& row.name %}/view">{%& row.name %}</a></td>
+    {% if row.name ~= "all" then %}
+    <td>
+      <noscript><a href="/form/filter/{%& row.name %}">Modify</a></noscript>
+      <button class="onlyjs" hx-target="#form-filter" hx-get="/partial/form/filter/{%& row.name %}">Modify</button>
+    </td>
+    <td>
+      <noscript><a href="/filters/{%& row.name %}/delete">Delete</a></td></noscript>
+      <button class="onlyjs" hx-swap="outerHTML" hx-target="#table_filters" hx-delete="/filters/{%& row.name %}">Delete</button>
+    </td>
+    {% end %}
+  </tr>
+{% end %}
+</table>
+<noscript>
+<a
+href="/form/filter">Create New Filter</a>
+</noscript>
+<button
+class="onlyjs"
+hx-get="/partial/form/filter"
+hx-target="#form-filter"
+>Create New Filter</button>
+<div class="onlyjs" id="form-filter"></div>
+</fieldset>
 {% end %}
 
-<button 
-  {% if filter == "all" then %}
-    hx-post="/filters"
-    hx-include="#create-filter"
-  {% else %}
-    hx-put="/filters"
-    hx-include="#modify-filter"
-    hx-target="content"
-  {% end %}
->
-{% if filter == "all" then %}Create{% else %}Modify{% end %}
-</button>
-</form>
-</div>
+{% function block.content() %}
+<fieldset>
+{% if filter == "all" or filter == nil then %}
+<legend><h3>All Documents</h3></legend>
+{% else %}
+<legenid><h3>Filter : {%& filter %}</h3></legend>
 {% end %}
 
-{% function block.content_body() %}
-<div class="box">
-    <div id="ajax-body">
-    {% render("partial/tags", {filter = filter, 
-                               data = tags.data, 
-                               legend = filter .. " Tags"}) %}
-    <div id = "table-pdfs">
-    <fieldset>
-    <legend>Matching PDFs</legend>
-    {% render("partial/table", pdfs) %}
-    </fieldset>
-    </div>
-    </div>
-</div>
+<dl>
+<dt># of Documents</dt><dd>{%& pdfs.records %}</dd>
+</dl>
+
+{% render("partial/tags", {filter = filter, 
+                           data = tags.data, 
+                           legend = filter .. " Tags"}) %}
+<fieldset>
+<legend>Matching PDFs</legend>
+{% render("partial/table", pdfs) %}
+</fieldset>
+
+</fieldset>
 {% end %}
 
-{% function block.content_header() %}
-<h3>Summary of {%& filter %} filter</h3>
-There are {%& #tags.data %} tags across {%& pdfs.records %} documents found.
-{% end %}
-
-{% render('layouts/with_sidebar', {current_page="filters"}) %}
+{% render('layouts/base', {current_page="filters"}) %}

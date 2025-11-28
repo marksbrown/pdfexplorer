@@ -104,9 +104,9 @@ dbm.get_all_filters = function()
   return dbm.db:fetchAll(cmd)
 end
 
-local all_filters = dbm.get_all_filters()
 
 dbm.validate_filter = function(filter)
+  local all_filters = dbm.get_all_filters()
   if filter == "all" then
     return true
   end
@@ -121,7 +121,7 @@ end
 dbm.delete_filter = function(filter)
   assert(dbm.validate_filter(filter))
   local cmd = [[DROP view myviews_]] .. filter
-  dbm.db:execute(cmd)
+  return dbm.db:execute(cmd)
 end
 
 dbm.count_filters = function()
@@ -191,6 +191,7 @@ dbm.count_tags = function(filter)
 end
 
 dbm.count_tags_by_filter = function(tag)
+  local all_filters = dbm.get_all_filters()
   local results = {}
   for i, filter in ipairs(all_filters) do
     local c = dbm.count_images_by_tag(tag, filter.name)

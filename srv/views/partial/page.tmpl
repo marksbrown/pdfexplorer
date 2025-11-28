@@ -1,9 +1,9 @@
 {% function block.generate_tag(t, f, tc) %}
 {% local tc = tc or vars.count_tag(t, f) %}
 {% if tc == 0 or tc == nil then %}
-<a class="tag {% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
+<a class="{% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
 {% else %}
-<a class="tag {% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+<a class="{% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
 {% end %}
 {% end %}
 
@@ -12,7 +12,7 @@
 {% end %}
 
 {% function block.content_body() %}
-  <div class="box page">
+  <div class="page">
   {% block.new_page(page_data.png) %}
   </div>
 {% end %}
@@ -20,13 +20,13 @@
 
 {% function block.content_sidebar() %}
 {% local tags = vars.get_tags(page_data.id, page_data.page) %}
-<div class="box page-meta">
+<div class="page-meta">
 {% if #tags > 0 then %}
-  <fieldset class="tags">
+  <fieldset>
   <legend>Page {%& page_data.page %} metadata</legend>
   <a href="/pdfs/{%& page_data.id %}?page={%& page_data.page %}#{%& page_data.page %}">Page {%& page_data.page %}</a>
   of <a href="/pdfs/{%& page_data.id %}">{%& page_data.id %}</a>
-  <fieldset class="tags">
+  <fieldset class="tags"> 
   <legend>Tags</legend>
   {% for i, row in ipairs(tags) do %}
     {% block.generate_tag(row.tag, filter, vars.count_tag(row.tag, filter)) %}

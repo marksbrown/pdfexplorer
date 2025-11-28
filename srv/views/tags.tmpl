@@ -1,49 +1,55 @@
 {% function block.generate_tag(t, f, tc) %}
 {% local tc = tc or vars.count_tag(t, f) %}
 {% if tc == 0 or tc == nil then %}
-<a class="tag {% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
+<a class="{% if t == tag then %}current {% end %} empty" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}</a>
 {% else %}
-<a class="tag {% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+<a class="{% if t == tag then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
 {% end %}
 {% end %}
 
 {% function block.header() %}
-<h1>{%& tag %}</div>({%& total_pages %})</h1>
-
-<div class="cluster"><div>
+<div class="cluster"><fieldset id="page-meta">
+<legend><h2>Tag : <a href="{%& url %}">{%& tag %}({%& total_pages %})</a></h2></legend>
 {% render('partial/group', {tag = tag, filter=filter}) %}
 {% if other_filters ~= nil then %}
 <fieldset>
 <legend>{%& tag %} is found in filters</legend>
+<ul>
 {% for k, v in pairs(other_filters) do %}
+<li>
 {% if v > 0 then %}
-<a class="tag {% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}({%& v %})</a>
+<a class="{% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}({%& v %})</a>
 {% else %}
-<a class="tag empty {% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}</a>
+<a class="empty {% if k == filter then %}current{% end %}" href="{%& vars.siteurl %}/filters/{%& k %}/tags/{%& tag %}">{%& k %}</a>
 {% end %}
+</li>
 {% end %}
+</ul>
 </fieldset>
 {% end %}
 
 {% if #aka > 0 then %}
-<fieldset class="box">
+<fieldset>
 <legend>{%& tag %} is also known as</legend>
+<ul>
 {% for i, t in ipairs(aka) do %}
-  {% block.generate_tag(t, filter) %}
+  <li>{% block.generate_tag(t, filter) %}</li>
 {% end %}
+</ul>
 </fieldset>
 {% end %}
 
 {% if #related > 0 then %}
-<fieldset class="box">
+<fieldset>
 <legend>{%& tag %} is related to</legend>
+<ul>
 {% for i, t in ipairs(related) do %}
-  {% block.generate_tag(t, filter) %}
+  <li>{% block.generate_tag(t, filter) %}</li>
 {% end %}
+</ul>
 </fieldset>
 {% end %}
-</div>
-</div>
+</fieldset></div>
 
 {% end %}
 

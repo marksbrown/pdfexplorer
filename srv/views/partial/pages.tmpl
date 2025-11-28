@@ -2,10 +2,12 @@
 {% for i = 1, #pages do %}
   {% local current_page = pages[i].page + offset %}
   {% if prev_page ~= nil then %}
-    {% if current_page - prev_page ~= 1 then %}<hr class="eoq">{% end %}
+    {% if current_page - prev_page ~= 1 then %}<hr>{% end %}
   {% end %}
   <fieldset id="{%& i + offset %}">
-  <legend>Page {%& i + offset %} of {%& total_pages %}</legend>
+
+  <legend><h3>
+  <a href="{%& url %}?page={%& i + offset %}#{%& i + offset %}">Page {%& i + offset %} of {%& total_pages %}</a></h3></legend>
   {% render('partial/page', {url=url, pdf=pdf, tag=tag, filter=filter, page_data = pages[i]}) %}
   </fieldset>
   {% prev_page = current_page %}

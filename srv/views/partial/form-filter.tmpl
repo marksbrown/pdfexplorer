@@ -1,0 +1,47 @@
+<form action="/filters/{% if method == 'post' then %}new{% elseif method == 'put' then %}{%& filter %}/modify{% end %}"
+method="{%& method %}"
+id="form-filter"
+>
+  {% if method == 'post' then %}
+  <fieldset>
+    <legend>Filter ID</legend>
+    <input type="hidden" name="_method" value="post">
+    <input name="filter_name" type="text" required />
+  </fieldset>
+  {% elseif method == "put" then %}
+  <fieldset>
+    <legend>Filter ID</legend>
+    <input type="hidden" name="_method" value="put">
+    <input name="filter_name" type="text" readonly value = "{%& filter %}"/>
+  </fieldset>
+  {% end %}
+{% for key, values in pairs(form_data) do %}
+  <fieldset>
+    <legend>{%& key %}</legend>
+    <div class="cluster"><div>
+  {% for value, selected in pairs(values) do %}
+    <div>
+      <input type="checkbox" id="{%& key %}[]" name="{%& key %}[]" value="{%& value %}" 
+      {% if selected or method=="post" then %}checked{% end %}/>
+      <label for="{{%& key %}[]">{%& value %}</label>
+    </div>
+  {% end %}
+    </div></div>
+  </fieldset>
+{% end %}
+
+<noscript>
+<input type="submit">
+{% if method == "post" then %}Create{% elseif method == "put" then %}Modify{% else %}Unknown!{% end %}
+</input>
+</noscript>
+<button class="nojs" 
+  {% if method == "post" then %}
+    hx-post="/filters/new"
+  {% elseif method == "put" then %}
+    hx-put="/filters/{%& filter %}/modify"
+  {% end %}
+>
+{% if method == "post" then %}Create{% elseif method == "put" then %}Modify{% else %}Unknown!{% end %}
+</button>
+</form>

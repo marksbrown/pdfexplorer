@@ -1,11 +1,12 @@
 {% function block.generate_tag(t, f, tc) %}
   {% local tc = tc or vars.count_tag(t, f) %}
-  <a class="tag  {% if tc == 0 then %}empty{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
+  <a class="{% if tc == 0 then %}empty{% end %}" href="{%& vars.siteurl %}/filters/{%& f %}/tags/{%& t %}">{%& t %}({%& tc %})</a>
 {% end %}
 
 {% if #data > 0 then %}
-<fieldset class="tags">
+<fieldset> 
 <legend>{%& legend %}</legend>
+<div class="tags">
 {% for i, row in ipairs(data) do %}
   {% block.generate_tag(row.tag, filter, row.count) %}
 {% end %}

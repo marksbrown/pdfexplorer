@@ -129,3 +129,7 @@ p{
 .doctest-block {
   overflow-x: scroll;
 }
+
+img {
+  margin: auto;
+}

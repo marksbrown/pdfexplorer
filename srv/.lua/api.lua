@@ -92,30 +92,13 @@ end)
 fm.setRoute(fm.GET"/table/filters/json", function(r)
   return fm.serveContent("json", filter_table())
 end)
---===== /meta =====-
---
-local meta_handler = function(template)
-  return function(r)
-    filter = r.params.filter
-    assert(dbm.validate_filter(filter))
-    unique_meta_found = dbm.get_metadata_keys(filter)  
-    return fm.serveContent(template, {filter = filter})
-  end
-end
 
-fm.setRoute(fm.GET"/m", fm.serveRedirect("/m/all"))
-fm.setRoute(fm.GET"/meta", fm.serveRedirect("/meta/all"))
-fm.setRoute({'/m/:filter', '/meta/:filter', method="GET"}, meta_handler("meta"))
-fm.setRoute({'/m/:filter/json', '/meta/:filter/json', method="GET"}, meta_handler("json"))
-
---===== /filters/* =====--
-local view_filters_handler = function(template)
-  return function(r)
-    filter = r.params.filter
+--===== /form/filter/* =====--
+local _get_form_data = function(filter)
     assert(dbm.validate_filter(filter))
     local form_data = {}
     for i, key in ipairs(dbm.get_metadata_keys()) do
-      all_values = dbm.get_metadata_values(key, "all")
+      all_values = dbm.get_metadata_values(key, 'all')
       selected_values = dbm.get_metadata_values(key, filter)
 
       form_data[key] = {}
@@ -123,17 +106,44 @@ local view_filters_handler = function(template)
         form_data[key][value] = uti.value_in_arr(value, selected_values)
       end
     end
+    return form_data
+end
+
+local get_form_filter_handler = function(method, template)
+  return function(r)
+    filter = r.params.filter or 'all'
+    return fm.serveContent(template, {method=method, filter=filter, form_data = _get_form_data(filter)})
+  end
+end
+
+fm.setRoute(fm.GET"/form/filter", get_form_filter_handler('post', 'putpost-filter'))
+fm.setRoute(fm.GET"/form/filter/all", get_form_filter_handler('post', 'putpost-filter'))
+fm.setRoute(fm.GET"/form/filter/:filter", get_form_filter_handler('put', 'putpost-filter'))
+
+fm.setRoute(fm.GET"/partial/form/filter", get_form_filter_handler('post', 'partial/form-filter'))
+fm.setRoute(fm.GET"/partial/form/filter/all", get_form_filter_handler('post', 'partial/form-filter'))
+fm.setRoute(fm.GET"/partial/form/filter/:filter", get_form_filter_handler('put', 'partial/form-filter'))
+
+--===== /filters/:filter/view =====--
+--===== /filters/* =====--
+local view_filters_handler = function(template)
+  return function(r)
+    filter = r.params.filter
+    assert(dbm.validate_filter(filter))
     return fm.serveContent(template, {filter = filter,
                                      filters = filter_table(),
-                                     form_data = form_data,
+                                     form_data = _get_form_data(filter),
                                      pdfs = pdf_table(filter),
                                      tags = tag_table(filter)})
   end
 end
 
-fm.setRoute(fm.GET"/f", fm.serveRedirect("/f/all"))
-fm.setRoute({"/filters", "/filters/create", "/filters/:filter/delete", method="GET"}, fm.serveRedirect("/filters/all"))
-fm.setRoute({"/f/:filter", "/filters/:filter", method="GET"}, view_filters_handler("filters"))
+fm.setRoute("/f", fm.serveRedirect("/f/all/view"))
+fm.setRoute("/filters", fm.serveRedirect("/filters/all/view"))
+fm.setRoute("/f/all", fm.serveRedirect("/f/all/view"))
+fm.setRoute("/filters/all", fm.serveRedirect("/filters/all/view"))
+
+fm.setRoute({"/f/:filter/view", "/filters/:filter/view", method="GET"}, view_filters_handler("filters"))
 fm.setRoute({"/f/:filter/json", "/filters/:filter/json", method="GET"}, view_filters_handler("json"))
 
 local parse_metadata_filters = function(r)
@@ -152,56 +162,55 @@ local parse_metadata_filters = function(r)
   return selected
 end
 
---create (POST)
+--new (POST)
+--modify (PUT)
+--guess by hidden form attribute _method (GET)
 local filters_create_handler = function(method)
   return function(r)
-  local new_filter = r.params.new_filter
-  if dbm.validate_filter(new_filter) then
-    print("Filter already exists!")
-    return fm.serveResponse("409", "Filter already exists with name : " .. new_filter)
-  elseif new_filter == "all" or new_filter == "new" or new_filter == "create" then
-      return fm.serveResponse("400", "Invalid filter name : " .. new_filter)
+  local filter = r.params.filter_name
+  local _method = r.params._method:lower()
+  local get_method_catch = false  -- alters behaviour to no js
+  if method == "get" then
+    method = _method
+    get_method_catch = true
   end
-
+  r.params._method = nil
+  if method == "post" then
+    if dbm.validate_filter(filter) then
+      return fm.serveResponse("409", "Filter already exists with name : " .. filter)
+    end
+  elseif method == "put" then
+    if filter == "all" then
+      return fm.serveResponse("400", "Invalid filter name : " .. filter)
+    else
+      assert(dbm.delete_filter(filter))
+    end
+  end
+  
   local metadata = parse_metadata_filters(r)
-  assert(dbm.create_new_filter(new_filter, metadata))
-  return fm.serveRedirect("/filters/"..new_filter)
-end
-end
-
-fm.setRoute({"/f", "/filters", "/f/create", "/filters/create", method="POST"}, filters_create_handler("POST"))
-
---modify (PUT)
-local filters_modify_handler = function(method)
-  return function(r)
-  local filter = r.params.filter
-  local filter = r.params.existing_filter or r.params.filter
-  local metadata = parse_metadata_filters(r)
-  if dbm.validate_filter(filter) then
-      dbm.delete_filter(filter)
-      assert(dbm.create_new_filter(filter, metadata))
-      return fm.serveRedirect()
-  else
-      return fm.serveResponse("404", "Filter does not exist!")
+  assert(dbm.create_new_filter(filter, metadata))
+  local new_path = fm.makePath("/filters/" .. filter .. "/view")
+  if get_method_catch then
+    return fm.serveRedirect(200, fm.makePath("/filters/all/view"))
+  end
+  return fm.serveResponse(200, {["HX-Redirect"] = new_path}, "")
   end
 end
-end
 
---htmx
-fm.setRoute({"/f", "/filters", method="PUT"}, filters_modify_handler("PUT"))
---fallback
-fm.setRoute({"/f/:filter/modify", "/filters/:filter/modify", method="PUT"}, filters_modify_handler("POST"))
+fm.setRoute({"/f/new", "/filters/new", method="POST"}, filters_create_handler("post"))
+fm.setRoute({"/f/:filter/modify", "/filters/:filter/modify", method="PUT"}, filters_create_handler("put"))
+-- fallback
+fm.setRoute({"/f/:filter/modify", "/filters/:filter/modify", method="GET"}, filters_create_handler("get"))
 
 -- delete (DELETE)
-local filters_delete_handler = function(method)
+local filters_delete_handler = function()
   return function(r)
     local metadata = parse_metadata_filters(r)
     local filter = r.params.filter
     local method = r.method
     if not dbm.validate_filter(filter) then
       print("Warning! Filter does not exist")
-      return filters_create_handler(r)
-      --return fm.serveResponse("404", "Filter does not exist!")
+      return fm.serveResponse("404", "Filter does not exist!")
     elseif filter == 'all' then
       return fm.serveResponse("400", "Cannot delete filter:"..filter)
     else
@@ -209,7 +218,9 @@ local filters_delete_handler = function(method)
       if method == "GET" then
         return fm.serveRedirect("303", "/filters/all")
       elseif method == "DELETE" then
-        return fm.serveRedirect("303", "/table/filters")
+
+        local new_path = fm.makePath("/filters/all/view")
+        return fm.serveResponse(303, {["HX-Redirect"] = new_path}, "")
       end
     end
   end
@@ -226,10 +237,21 @@ local tags_handler = function(template)
     return function(r)
     local s = uti.load_settings()
     local limit = s.pagination
-    local offset = r.params.offset or 0
+    if r.params.page ~= nil then
+      offset = tonumber(r.params.page) - limit
+    elseif r.params.offset ~= nil then
+      offset = tonumber(r.params.offset)
+    else
+      offset = 0
+    end
+    if offset < 0 then
+      offset = 0
+    end
     local filter = r.params.filter or 'all'
     assert(dbm.validate_filter(filter))
     local total_pages = dbm.count_images_by_tag(r.params.tag, filter)
+    assert(offset < total_pages, "exceeds limit!" .. offset .. " " .. total_pages)
+    print("Getting from " .. filter .. " for tag " .. r.params.tag)
     local other_filters = dbm.count_tags_by_filter(r.params.tag)
     local pages = dbm.load_images_by_tag(r.params.tag, filter, limit, offset)
     if tonumber(limit) > #pages then

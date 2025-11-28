@@ -1,0 +1,11 @@
+{% function block.content() %}
+
+{% if method == "put" then %}
+<h1>Modify '{%& filter %}' filter</h1>
+{% elseif method == "post" then %}
+<h1>Create New Filter</h1>
+{% end %}
+{% render("partial/form-filter", {method = method, filter = filter, form_data = form_data}) %}
+{% end %}
+
+{% render('layouts/base') %}
